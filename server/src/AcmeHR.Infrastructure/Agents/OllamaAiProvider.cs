@@ -51,7 +51,19 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
                 .ToList();
 
             var replyText = body?.Message?.Content?.Trim();
-            return new AiChatResponse(string.IsNullOrEmpty(replyText) ? "(The model returned an empty reply.)" : replyText, toolCalls);
+            if (string.IsNullOrEmpty(replyText))
+            {
+                replyText = "(The model returned an empty reply.)";
+            }
+            else if (LooksLikeStrayToolCallJson(replyText))
+            {
+                // Small local models occasionally write a tool-call-shaped object into the text
+                // content instead of using the real tool-calling mechanism, especially when no
+                // real tool applies to the question. Never show that raw JSON to the user.
+                replyText = "I couldn't quite work out how to answer that from the board data. Could you rephrase it?";
+            }
+
+            return new AiChatResponse(replyText, toolCalls);
         }
         catch (Exception)
         {
@@ -130,6 +142,27 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
 
     private string ModelName => string.IsNullOrWhiteSpace(settings.Value.Model) ? DefaultModel : settings.Value.Model;
 
+    private static bool LooksLikeStrayToolCallJson(string text)
+    {
+        if (text.Length > 300 || !text.TrimStart().StartsWith('{') || !text.TrimEnd().EndsWith('}'))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(text);
+            var root = doc.RootElement;
+            return root.ValueKind == JsonValueKind.Object &&
+                   (root.TryGetProperty("name", out _) || root.TryGetProperty("function", out _) || root.TryGetProperty("tool", out _)) &&
+                   root.TryGetProperty("parameters", out _);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     private static string BuildBoardSystemPrompt(AiBoardContext board, bool toolsEnabled)
     {
         var sb = new StringBuilder();
@@ -149,10 +182,10 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
             sb.AppendLine($"- \"{task.Title}\" (id: {task.TaskId}), status: {task.Status}, assignee: {task.AssigneeName ?? "unassigned"}, due: {due}");
         }
         sb.AppendLine();
-        sb.AppendLine("Answer using only the data above. Be concise.");
+        sb.AppendLine("Answer using only the data above. Be concise, and reply in plain conversational English — never JSON, never a tool-call-shaped object, never code.");
         sb.AppendLine(toolsEnabled
-            ? "If the user clearly asks you to create a task, change a task's status, reassign a task, or change a deadline, call the matching tool with the correct id(s) from the lists above. Only call a tool when the request is unambiguous — ask a clarifying question instead of guessing."
-            : "You cannot take any actions in this conversation — only answer questions.");
+            ? "The only four things you can DO (not just discuss) are: create a task, change a task's status, reassign a task, or change a task's deadline — use the matching tool with the correct id(s) from the lists above, and only when the request is unambiguous (ask a clarifying question in plain text instead of guessing). For every other message — questions, greetings, anything not one of those four actions — just answer directly in plain text. Do not call a tool, and do not describe a tool call in your text, unless the user is clearly asking for one of those four actions."
+            : "You cannot take any actions in this conversation — only answer questions, in plain text.");
         return sb.ToString();
     }
 
