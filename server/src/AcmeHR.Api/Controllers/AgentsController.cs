@@ -42,6 +42,13 @@ public class AgentsController(IAgentService agentService, IHubContext<BoardHub> 
         return result.Succeeded ? Ok(result.Value) : BadRequest(new { error = result.Error });
     }
 
+    [HttpPost("suggest-task")]
+    public async Task<IActionResult> SuggestTaskFields(Guid boardId, SuggestTaskFieldsRequest request, CancellationToken cancellationToken)
+    {
+        var result = await agentService.SuggestTaskFieldsAsync(boardId, User.GetEmployeeId(), request, cancellationToken);
+        return result.Succeeded ? Ok(result.Value) : BadRequest(new { error = result.Error });
+    }
+
     [HttpGet("summary")]
     public async Task<IActionResult> GetSummary(Guid boardId, [FromQuery] DateOnly? sinceDate, CancellationToken cancellationToken)
     {

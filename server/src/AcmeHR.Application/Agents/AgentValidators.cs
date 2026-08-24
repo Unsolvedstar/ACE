@@ -21,3 +21,12 @@ public class RejectAgentActionRequestValidator : AbstractValidator<RejectAgentAc
 public class UpdateAgentBoardSettingsRequestValidator : AbstractValidator<UpdateAgentBoardSettingsRequest>
 {
 }
+
+public class SuggestTaskFieldsRequestValidator : AbstractValidator<SuggestTaskFieldsRequest>
+{
+    public SuggestTaskFieldsRequestValidator()
+    {
+        RuleFor(x => x.TitleDraft).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.DescriptionDraft).MaximumLength(2000);
+    }
+}

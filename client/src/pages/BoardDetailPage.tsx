@@ -373,8 +373,9 @@ export function BoardDetailPage() {
         })}
       </div>
 
-      {taskDialog && (
+      {taskDialog && boardId && (
         <TaskFormDialog
+          boardId={boardId}
           members={board.members}
           task={taskDialog.task}
           isSubmitting={isSubmittingTask}

@@ -4,7 +4,9 @@ import type {
   AgentConversationDto,
   AgentMessageDto,
   AgentSummaryDto,
+  AgentTaskSuggestionDto,
   SendAgentMessageRequest,
+  SuggestTaskFieldsRequest,
 } from "../types/agent";
 
 export async function getOrCreateConversation(boardId: string): Promise<AgentConversationDto> {
@@ -29,5 +31,13 @@ export async function getAgentSummary(boardId: string, sinceDate?: string): Prom
   const { data } = await apiClient.get<AgentSummaryDto>(`/boards/${boardId}/agent/summary`, {
     params: sinceDate ? { sinceDate } : undefined,
   });
+  return data;
+}
+
+export async function suggestTaskFields(
+  boardId: string,
+  request: SuggestTaskFieldsRequest,
+): Promise<AgentTaskSuggestionDto> {
+  const { data } = await apiClient.post<AgentTaskSuggestionDto>(`/boards/${boardId}/agent/suggest-task`, request);
   return data;
 }

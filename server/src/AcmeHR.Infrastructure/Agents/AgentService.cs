@@ -148,6 +148,37 @@ public class AgentService(
         return Result<AgentSummaryDto>.Success(new AgentSummaryDto(summary));
     }
 
+    public async Task<Result<AgentTaskSuggestionDto>> SuggestTaskFieldsAsync(
+        Guid boardId, Guid employeeId, SuggestTaskFieldsRequest request, CancellationToken cancellationToken = default)
+    {
+        var access = await CheckAccessAsync(boardId, employeeId, cancellationToken);
+        if (access is null)
+        {
+            return Result<AgentTaskSuggestionDto>.Failure("Board not found.");
+        }
+        if (!access.Value)
+        {
+            return Result<AgentTaskSuggestionDto>.Failure("You are not a member of this board.");
+        }
+
+        var boardContext = await BuildBoardContextAsync(boardId, cancellationToken);
+        var suggestion = await aiProvider.SuggestTaskFieldsAsync(
+            new AiTaskSuggestionRequest(boardContext, request.TitleDraft, request.DescriptionDraft), cancellationToken);
+
+        var assigneeName = suggestion.SuggestedAssigneeEmployeeId is { } assigneeId
+            ? boardContext.Members.FirstOrDefault(m => m.EmployeeId == assigneeId)?.FullName
+            : null;
+
+        return Result<AgentTaskSuggestionDto>.Success(new AgentTaskSuggestionDto(
+            suggestion.SuggestedAssigneeEmployeeId,
+            assigneeName,
+            suggestion.SuggestedAssigneeReason,
+            suggestion.SuggestedDueDate,
+            suggestion.SuggestedDueDateReason,
+            suggestion.SuggestedPriorityLabel,
+            suggestion.SuggestedPriorityReason));
+    }
+
     private async Task<AgentConversation> GetOrCreateConversationEntityAsync(
         Guid boardId, Guid employeeId, CancellationToken cancellationToken)
     {

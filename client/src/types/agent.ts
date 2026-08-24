@@ -102,3 +102,18 @@ export interface AgentChatTurnResultDto {
 export interface AgentSummaryDto {
   summary: string;
 }
+
+export interface SuggestTaskFieldsRequest {
+  titleDraft: string;
+  descriptionDraft?: string;
+}
+
+export interface AgentTaskSuggestionDto {
+  suggestedAssigneeEmployeeId: string | null;
+  suggestedAssigneeName: string | null;
+  suggestedAssigneeReason: string | null;
+  suggestedDueDate: string | null;
+  suggestedDueDateReason: string | null;
+  suggestedPriorityLabel: string | null;
+  suggestedPriorityReason: string | null;
+}

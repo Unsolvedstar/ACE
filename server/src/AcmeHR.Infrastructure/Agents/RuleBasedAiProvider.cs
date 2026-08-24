@@ -50,8 +50,50 @@ public class RuleBasedAiProvider : IAiProvider
     public Task<string> SummarizeAsync(AiSummaryRequest request, CancellationToken cancellationToken = default) =>
         Task.FromResult(BuildSummary(request.Board));
 
-    public Task<AiTaskSuggestion> SuggestTaskFieldsAsync(AiTaskSuggestionRequest request, CancellationToken cancellationToken = default) =>
-        Task.FromResult(new AiTaskSuggestion(null, null, null, null, null, null));
+    private static readonly string[] UrgencyKeywords = ["urgent", "asap", "critical", "safety", "incident", "hazard"];
+
+    public Task<AiTaskSuggestion> SuggestTaskFieldsAsync(AiTaskSuggestionRequest request, CancellationToken cancellationToken = default)
+    {
+        var board = request.Board;
+        var combinedText = $"{request.TitleDraft} {request.DescriptionDraft}".ToLowerInvariant();
+        var isUrgent = UrgencyKeywords.Any(keyword => combinedText.Contains(keyword));
+
+        AiTaskSuggestion result;
+        if (board.Members.Count == 0)
+        {
+            result = new AiTaskSuggestion(null, null, null, null, null, null);
+        }
+        else
+        {
+            var leastLoaded = board.Members
+                .Select(member => new
+                {
+                    Member = member,
+                    OpenCount = board.Tasks.Count(t => t.AssigneeEmployeeId == member.EmployeeId && t.Status != "Done"),
+                })
+                .OrderBy(x => x.OpenCount)
+                .ThenBy(x => x.Member.FullName)
+                .First();
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var dueDate = isUrgent ? today.AddDays(2) : today.AddDays(7);
+            var dueDateReason = isUrgent ? "Flagged as urgent/safety-related." : "Default one-week turnaround.";
+            var priorityLabel = isUrgent ? "Critical" : "Normal";
+            var priorityReason = isUrgent
+                ? "Mentions urgency or safety-related keywords."
+                : "No urgency or safety keywords detected.";
+
+            result = new AiTaskSuggestion(
+                leastLoaded.Member.EmployeeId,
+                $"Has the fewest open tasks ({leastLoaded.OpenCount}) on this board.",
+                dueDate,
+                dueDateReason,
+                priorityLabel,
+                priorityReason);
+        }
+
+        return Task.FromResult(result);
+    }
 
     // Deliberately conservative: only clearly-structured phrasings propose a mutation. Anything
     // ambiguous falls through to the read-only rules above rather than guessing at intent.

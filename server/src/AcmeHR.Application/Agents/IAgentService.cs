@@ -15,4 +15,7 @@ public interface IAgentService
 
     Task<Result<AgentSummaryDto>> GetStandupSummaryAsync(
         Guid boardId, Guid employeeId, DateOnly? sinceDate, CancellationToken cancellationToken = default);
+
+    Task<Result<AgentTaskSuggestionDto>> SuggestTaskFieldsAsync(
+        Guid boardId, Guid employeeId, SuggestTaskFieldsRequest request, CancellationToken cancellationToken = default);
 }
