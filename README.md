@@ -1,6 +1,6 @@
 # Digital Mining HR & Safety Management System
 
-Enterprise HR & safety management system for mining sites — role-based web portal (Employee, Line Manager, HR, Safety Officer, Medical, Security, Executive) with a future companion mobile app.
+Enterprise HR & safety management system for mining sites — role-based web portal (Employee, Line Manager, HR, Safety Officer, Medical, Security, Executive) with a companion mobile app.
 
 Reference design: [docs/mockup.jpeg](docs/mockup.jpeg)
 
@@ -16,6 +16,7 @@ Reference design: [docs/mockup.jpeg](docs/mockup.jpeg)
 server/                        ASP.NET Core solution (Api / Application / Domain / Infrastructure)
 server/ClockingReportParser/   Python service the Timesheet page's clocking-report parser calls
 client/                        React + TypeScript web portal
+mobile/                        Expo / React Native companion app
 docs/                          Reference materials
 ```
 

@@ -24,6 +24,24 @@ client/test-results/
 client/playwright-report/
 client/blob-report/
 
+# Mobile (Expo / React Native)
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/.kotlin/
+mobile/*.orig.*
+mobile/*.jks
+mobile/*.p8
+mobile/*.p12
+mobile/*.key
+mobile/*.mobileprovision
+mobile/.metro-health-check*
+mobile/*.tsbuildinfo
+mobile/.env*.local
+mobile/ios/
+mobile/android/
+
 # Editor
 .idea/
 .claude/
