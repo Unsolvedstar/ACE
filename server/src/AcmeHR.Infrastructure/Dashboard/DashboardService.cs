@@ -1,0 +1,119 @@
+using AcmeHR.Application.Dashboard;
+using AcmeHR.Domain.Enums;
+using AcmeHR.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace AcmeHR.Infrastructure.Dashboard;
+
+public class DashboardService(ApplicationDbContext dbContext) : IDashboardService
+{
+    public async Task<DashboardSummaryDto> GetSummaryAsync(Guid employeeId, CancellationToken cancellationToken = default)
+    {
+        var employee = await dbContext.Employees.FindAsync([employeeId], cancellationToken)
+            ?? throw new InvalidOperationException("Employee profile not found.");
+
+        var pendingLeaveCount = await GetPendingLeaveCountAsync(employee.Id, employee.Role, cancellationToken);
+        var incidentsThisMonth = await GetIncidentsThisMonthAsync(cancellationToken);
+        var medicalCompliancePercent = await GetMedicalCompliancePercentAsync(cancellationToken);
+        var trainingCompliancePercent = await GetTrainingCompliancePercentAsync(cancellationToken);
+        var myKpiOverallScorePercent = await GetMyKpiOverallScorePercentAsync(employeeId, cancellationToken);
+        var recentShiftRequests = await GetRecentShiftRequestsAsync(employee.Id, employee.Role, cancellationToken);
+
+        return new DashboardSummaryDto(
+            pendingLeaveCount,
+            incidentsThisMonth,
+            medicalCompliancePercent,
+            trainingCompliancePercent,
+            myKpiOverallScorePercent,
+            recentShiftRequests);
+    }
+
+    private async Task<int> GetPendingLeaveCountAsync(Guid employeeId, EmployeeRole role, CancellationToken cancellationToken)
+    {
+        return role == EmployeeRole.LineManager
+            ? await dbContext.LeaveRequests.CountAsync(r => r.Status == LeaveRequestStatus.PendingLineManagerApproval, cancellationToken)
+            : await dbContext.LeaveRequests.CountAsync(
+                r => r.EmployeeId == employeeId
+                    && (r.Status == LeaveRequestStatus.PendingLineManagerApproval || r.Status == LeaveRequestStatus.PendingHRApproval),
+                cancellationToken);
+    }
+
+    private async Task<int> GetIncidentsThisMonthAsync(CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        return await dbContext.IncidentReports
+            .CountAsync(i => i.CreatedAtUtc >= startOfMonth, cancellationToken);
+    }
+
+    private async Task<double?> GetMedicalCompliancePercentAsync(CancellationToken cancellationToken)
+    {
+        var examinations = await dbContext.MedicalExaminations
+            .Select(m => new { m.EmployeeId, m.ExamDate, m.Status })
+            .ToListAsync(cancellationToken);
+
+        if (examinations.Count == 0)
+        {
+            return null;
+        }
+
+        var latestByEmployee = examinations
+            .GroupBy(m => m.EmployeeId)
+            .Select(g => g.OrderByDescending(m => m.ExamDate).First().Status)
+            .ToList();
+
+        var compliantCount = latestByEmployee.Count(status => status is FitnessStatus.Fit or FitnessStatus.FitWithRestrictions);
+        return Math.Round(compliantCount * 100.0 / latestByEmployee.Count, 1);
+    }
+
+    private async Task<double?> GetTrainingCompliancePercentAsync(CancellationToken cancellationToken)
+    {
+        var expiryDates = await dbContext.Certificates.Select(c => c.ExpiryDate).ToListAsync(cancellationToken);
+        if (expiryDates.Count == 0)
+        {
+            return null;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var compliantCount = expiryDates.Count(expiry => expiry >= today);
+        return Math.Round(compliantCount * 100.0 / expiryDates.Count, 1);
+    }
+
+    private async Task<double?> GetMyKpiOverallScorePercentAsync(Guid employeeId, CancellationToken cancellationToken)
+    {
+        // Latest appraisal only, latest-non-null-checkpoint per item — same "current standing"
+        // rollup rule used by KpiService, kept as a small duplicate rather than a cross-service call.
+        var latestAppraisalScores = await dbContext.KpiAppraisals
+            .Where(a => a.EmployeeId == employeeId)
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .Select(a => a.Items.Select(i => i.Checkpoint4Score ?? i.Checkpoint3Score ?? i.Checkpoint2Score ?? i.Checkpoint1Score))
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (latestAppraisalScores is null)
+        {
+            return null;
+        }
+
+        var percents = latestAppraisalScores.Where(s => s.HasValue).Select(s => (s!.Value - 1) / 2.0 * 100.0).ToList();
+        return percents.Count == 0 ? null : Math.Round(percents.Average(), 1);
+    }
+
+    private async Task<IReadOnlyList<RecentShiftRequestDto>> GetRecentShiftRequestsAsync(
+        Guid employeeId, EmployeeRole role, CancellationToken cancellationToken)
+    {
+        var query = role is EmployeeRole.LineManager or EmployeeRole.HR or EmployeeRole.Executive
+            ? dbContext.ShiftChangeRequests.Include(r => r.Employee)
+            : dbContext.ShiftChangeRequests.Include(r => r.Employee).Where(r => r.EmployeeId == employeeId);
+
+        var requests = await query
+            .OrderByDescending(r => r.CreatedAtUtc)
+            .Take(5)
+            .ToListAsync(cancellationToken);
+
+        return requests
+            .Select(r => new RecentShiftRequestDto(
+                r.Id, r.Employee!.FullName, r.RequestedShiftDate, r.RequestedShiftType, r.Status, r.CreatedAtUtc))
+            .ToList();
+    }
+}

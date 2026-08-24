@@ -1,0 +1,33 @@
+# .NET
+server/**/bin/
+server/**/obj/
+server/**/App_Data/
+server/**/logs/
+*.user
+.vs/
+
+# Secrets (kept out of source control; use `dotnet user-secrets`)
+appsettings.Development.json
+appsettings.Local.json
+
+# Python (server/ClockingReportParser)
+server/ClockingReportParser/__pycache__/
+server/ClockingReportParser/.venv/
+*.pyc
+
+# Node / React
+client/node_modules/
+client/dist/
+client/.vite/
+npm-debug.log*
+client/test-results/
+client/playwright-report/
+client/blob-report/
+
+# Editor
+.idea/
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store

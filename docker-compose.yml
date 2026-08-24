@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: acme_hr
+      POSTGRES_USER: acme_app
+      POSTGRES_PASSWORD: acmehr_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acme_app -d acme_hr"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  clocking-parser:
+    build:
+      context: ./server/ClockingReportParser
+    ports:
+      - "8010:8010"
+
+  api:
+    build:
+      context: ./server
+      dockerfile: src/AcmeHR.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=acme_hr;Username=acme_app;Password=acmehr_dev_password"
+      Jwt__Key: "docker-local-dev-signing-key-please-change-before-any-real-deployment"
+      Jwt__Issuer: AcmeHR
+      Jwt__Audience: AcmeHR.Client
+      Jwt__ExpiryMinutes: "60"
+      ClockingParser__BaseUrl: "http://clocking-parser:8010"
+    ports:
+      - "5167:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clocking-parser:
+        condition: service_started
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

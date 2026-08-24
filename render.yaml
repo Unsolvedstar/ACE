@@ -1,0 +1,76 @@
+# Render Blueprint — deploys the whole stack (API, frontend, database) from this repo.
+#
+# To use: push this repo to GitHub, then in the Render dashboard choose
+# "New +" -> "Blueprint" and point it at the repo. Render reads this file and
+# provisions all three resources below in one go. See README.md "Deploying to
+# Render" for the full walkthrough and post-deploy checklist.
+#
+# This targets the free tier for a testing/demo deployment, not production:
+# - The free Postgres database is deleted after its trial period (Render's
+#   current policy — check the dashboard when creating it). Fine for testing;
+#   upgrade the `plan` below (or point ConnectionStrings__Default at an
+#   external provider like Neon/Supabase) before relying on it long-term.
+# - Free web services spin down after 15 minutes of inactivity; the next
+#   request wakes them up with a ~30-60s cold start.
+
+databases:
+  - name: acme-hr-db
+    plan: free
+    databaseName: acme_hr
+    user: acme_app
+
+services:
+  # Private service (no public URL, no auth of its own) — only reachable from
+  # acme-hr-api over Render's internal network at http://<name>:8010.
+  - type: pserv
+    name: acme-hr-clocking-parser
+    runtime: docker
+    plan: free
+    dockerfilePath: ./server/ClockingReportParser/Dockerfile
+    dockerContext: ./server/ClockingReportParser
+
+  - type: web
+    name: acme-hr-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./server/src/AcmeHR.Api/Dockerfile
+    dockerContext: ./server
+    healthCheckPath: /healthz
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__Default
+        fromDatabase:
+          name: acme-hr-db
+          property: connectionString
+      - key: Jwt__Key
+        generateValue: true
+      - key: Jwt__Issuer
+        value: AcmeHR
+      - key: Jwt__Audience
+        value: AcmeHR.Client
+      - key: Jwt__ExpiryMinutes
+        value: "60"
+      # Must match the client service's public URL exactly (scheme + host, no
+      # trailing slash). Render normally derives it from the `name` below, but
+      # confirm the actual URL after first deploy and update this if it differs.
+      - key: Cors__AllowedOrigins__0
+        value: https://acme-hr-client.onrender.com
+      - key: ClockingParser__BaseUrl
+        value: http://acme-hr-clocking-parser:8010
+
+  - type: web
+    name: acme-hr-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # Must match the api service's public URL exactly, with /api appended.
+      # Baked into the JS bundle at build time — changing it requires a rebuild.
+      - key: VITE_API_BASE_URL
+        value: https://acme-hr-api.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
