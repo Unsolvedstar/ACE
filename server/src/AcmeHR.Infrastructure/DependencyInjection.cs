@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using AcmeHR.Application.Account;
 using AcmeHR.Application.Acknowledgments;
+using AcmeHR.Application.Agents;
 using AcmeHR.Application.Announcements;
 using AcmeHR.Application.Attachments;
 using AcmeHR.Application.Auth;
@@ -73,6 +74,7 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<Attachments.FileStorageSettings>(configuration.GetSection(Attachments.FileStorageSettings.SectionName));
         services.Configure<Timesheet.ClockingParserSettings>(configuration.GetSection(Timesheet.ClockingParserSettings.SectionName));
+        services.Configure<Agents.AiProviderSettings>(configuration.GetSection(Agents.AiProviderSettings.SectionName));
 
         var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
 
@@ -139,6 +141,11 @@ public static class DependencyInjection
         services.AddScoped<IBoardTaskService, Boards.BoardTaskService>();
         services.AddScoped<IBoardPerformanceService, Boards.BoardPerformanceService>();
         services.AddScoped<IDocumentSigningService, Documents.DocumentSigningService>();
+        services.AddScoped<IAgentService, Agents.AgentService>();
+        // AiProvider:Provider selects the implementation; only "Mock" (default) exists so far.
+        // A real LLM provider (e.g. AnthropicClaudeAiProvider, registered via AddHttpClient)
+        // slots in here later without touching any Agents call site.
+        services.AddScoped<IAiProvider, Agents.RuleBasedAiProvider>();
 
         services.AddHttpClient<IClockingReportParserService, Timesheet.ClockingReportParserService>((sp, client) =>
         {

@@ -54,6 +54,63 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.ToTable("Acknowledgments", (string)null);
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentConversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("LastMessageAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("BoardId", "EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("AgentConversations", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.ToTable("AgentMessages", (string)null);
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.Announcement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1431,6 +1488,36 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentConversation", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Board", "Board")
+                        .WithMany()
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentMessage", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.AgentConversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.Announcement", b =>
                 {
                     b.HasOne("AcmeHR.Domain.Entities.Employee", "PostedByEmployee")
@@ -1837,6 +1924,11 @@ namespace AcmeHR.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentConversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.Board", b =>

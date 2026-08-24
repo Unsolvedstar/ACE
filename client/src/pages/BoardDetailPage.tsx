@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, FileDown, Plus, Settings2, UserPlus } from "lucide-react";
+import { ArrowLeft, FileDown, Plus, Settings2, Sparkles, UserPlus } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { addBoardMember, getBoardById, updateBoard } from "../api/boards";
 import { changeBoardTaskStatus, createBoardTask, deleteBoardTask, downloadWeeklySummaryPdf, getTasksForBoard, updateBoardTask } from "../api/boardTasks";
 import { extractErrorMessage } from "../api/client";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { AgentChatPanel } from "../components/boards/AgentChatPanel";
 import { BoardMemberPicker } from "../components/boards/BoardMemberPicker";
 import { PersonAvatar } from "../components/boards/PersonAvatar";
 import { TaskCard } from "../components/boards/TaskCard";
@@ -49,6 +50,7 @@ export function BoardDetailPage() {
   const [addMemberError, setAddMemberError] = useState<string | null>(null);
 
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
+  const [isAgentPanelOpen, setIsAgentPanelOpen] = useState(false);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsPriority, setSettingsPriority] = useState<BoardPriority>(BoardPriority.Normal);
@@ -255,6 +257,16 @@ export function BoardDetailPage() {
               <PersonAvatar key={member.employeeId} name={member.employeeName} size={28} className="border-[#202325]" />
             ))}
           </div>
+          {isMember && (
+            <button
+              type="button"
+              onClick={() => setIsAgentPanelOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-[#6fbe44]/40 px-3 py-1.5 text-xs font-medium text-[#93d75f] transition-colors hover:bg-[#6fbe44]/10"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Assistant
+            </button>
+          )}
           {isOwner && (
             <button
               type="button"
@@ -361,6 +373,10 @@ export function BoardDetailPage() {
             setTaskFormError(null);
           }}
         />
+      )}
+
+      {isAgentPanelOpen && boardId && (
+        <AgentChatPanel boardId={boardId} onClose={() => setIsAgentPanelOpen(false)} />
       )}
 
       {taskPendingDelete && (
