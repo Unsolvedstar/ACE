@@ -1,31 +1,55 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Send, Sparkles, X } from "lucide-react";
+import { approveAgentAction, getAgentActions, rejectAgentAction } from "../../api/agentActions";
 import { getAgentMessages, getOrCreateConversation, sendAgentMessage } from "../../api/agents";
 import { extractErrorMessage } from "../../api/client";
-import { AgentMessageRole, type AgentMessageDto } from "../../types/agent";
+import { AgentActionStatus, AgentMessageRole, type AgentActionAuditDto, type AgentMessageDto } from "../../types/agent";
+import { AgentActionCard } from "./AgentActionCard";
 
 const QUICK_PROMPTS = ["What's overdue?", "Show workload", "Standup summary"];
 
 interface AgentChatPanelProps {
   boardId: string;
+  canDecideActions: boolean;
+  refreshSignal?: number;
   onClose: () => void;
 }
 
-export function AgentChatPanel({ boardId, onClose }: AgentChatPanelProps) {
+export function AgentChatPanel({ boardId, canDecideActions, refreshSignal, onClose }: AgentChatPanelProps) {
   const [messages, setMessages] = useState<AgentMessageDto[]>([]);
+  const [turnActions, setTurnActions] = useState<Record<string, AgentActionAuditDto[]>>({});
+  const [pendingActions, setPendingActions] = useState<AgentActionAuditDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [busyActionId, setBusyActionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const loadPendingActions = useCallback(async () => {
+    try {
+      setPendingActions(await getAgentActions(boardId, AgentActionStatus.Proposed));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    }
+  }, [boardId]);
+
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([getOrCreateConversation(boardId), getAgentMessages(boardId)])
-      .then(([, existingMessages]) => setMessages(existingMessages))
+    Promise.all([getOrCreateConversation(boardId), getAgentMessages(boardId), getAgentActions(boardId, AgentActionStatus.Proposed)])
+      .then(([, existingMessages, pending]) => {
+        setMessages(existingMessages);
+        setPendingActions(pending);
+      })
       .catch((err) => setError(extractErrorMessage(err)))
       .finally(() => setIsLoading(false));
   }, [boardId]);
+
+  useEffect(() => {
+    if (refreshSignal !== undefined) {
+      void loadPendingActions();
+    }
+  }, [refreshSignal, loadPendingActions]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,6 +62,13 @@ export function AgentChatPanel({ boardId, onClose }: AgentChatPanelProps) {
     try {
       const result = await sendAgentMessage(boardId, { content });
       setMessages((prev) => [...prev, result.userMessage, result.assistantMessage]);
+      if (result.proposedActions.length > 0) {
+        setTurnActions((prev) => ({ ...prev, [result.assistantMessage.id]: result.proposedActions }));
+        const stillPending = result.proposedActions.filter((a) => a.status === AgentActionStatus.Proposed);
+        if (stillPending.length > 0) {
+          setPendingActions((prev) => [...prev, ...stillPending]);
+        }
+      }
       setDraft("");
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -51,7 +82,40 @@ export function AgentChatPanel({ boardId, onClose }: AgentChatPanelProps) {
     void sendContent(draft);
   }
 
-return (
+  function applyActionUpdate(updated: AgentActionAuditDto) {
+    setPendingActions((prev) => prev.filter((a) => a.id !== updated.id));
+    setTurnActions((prev) => {
+      const next = { ...prev };
+      for (const key of Object.keys(next)) {
+        next[key] = next[key].map((a) => (a.id === updated.id ? updated : a));
+      }
+      return next;
+    });
+  }
+
+  async function handleApprove(actionId: string) {
+    setBusyActionId(actionId);
+    try {
+      applyActionUpdate(await approveAgentAction(boardId, actionId));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setBusyActionId(null);
+    }
+  }
+
+  async function handleReject(actionId: string, reason?: string) {
+    setBusyActionId(actionId);
+    try {
+      applyActionUpdate(await rejectAgentAction(boardId, actionId, { reason }));
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setBusyActionId(null);
+    }
+  }
+
+  return (
     <div className="fixed inset-0 z-[90] flex justify-end bg-slate-950/60">
       <div className="flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#3a3d40] shadow-2xl font-['Inter']">
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
@@ -69,28 +133,58 @@ return (
           </button>
         </div>
 
+        {pendingActions.length > 0 && (
+          <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-white/40">
+              Pending actions ({pendingActions.length})
+            </span>
+            {pendingActions.map((action) => (
+              <AgentActionCard
+                key={action.id}
+                action={action}
+                canDecide={canDecideActions}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                isBusy={busyActionId === action.id}
+              />
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-3">
           {isLoading ? (
             <p className="text-sm text-white/40">Loading...</p>
           ) : messages.length === 0 ? (
             <p className="text-sm text-white/40">
-              Ask me about this board — what's overdue, who's busy, or get a standup summary.
+              Ask me about this board — what's overdue, who's busy, get a standup summary, or ask me to create or
+              update a task.
             </p>
           ) : (
             messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === AgentMessageRole.User ? "justify-end" : "justify-start"}`}
-              >
+              <div key={message.id} className="flex flex-col gap-2">
                 <div
-                  className={`max-w-[85%] whitespace-pre-wrap rounded-xl px-3 py-2 text-sm ${
-                    message.role === AgentMessageRole.User
-                      ? "border border-[#6fbe44]/40 bg-[#6fbe44]/20 text-white"
-                      : "bg-[#202325] text-white/90"
-                  }`}
+                  className={`flex ${message.role === AgentMessageRole.User ? "justify-end" : "justify-start"}`}
                 >
-                  {message.content}
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-xl px-3 py-2 text-sm ${
+                      message.role === AgentMessageRole.User
+                        ? "border border-[#6fbe44]/40 bg-[#6fbe44]/20 text-white"
+                        : "bg-[#202325] text-white/90"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
                 </div>
+                {turnActions[message.id]?.map((action) => (
+                  <AgentActionCard
+                    key={action.id}
+                    action={action}
+                    canDecide={canDecideActions}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    isBusy={busyActionId === action.id}
+                  />
+                ))}
               </div>
             ))
           )}

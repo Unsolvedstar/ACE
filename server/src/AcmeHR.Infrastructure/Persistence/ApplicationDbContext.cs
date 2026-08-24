@@ -39,6 +39,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<KpiAppraisalItem> KpiAppraisalItems => Set<KpiAppraisalItem>();
     public DbSet<AgentConversation> AgentConversations => Set<AgentConversation>();
     public DbSet<AgentMessage> AgentMessages => Set<AgentMessage>();
+    public DbSet<AgentActionAudit> AgentActionAudits => Set<AgentActionAudit>();
+    public DbSet<AgentBoardSettings> AgentBoardSettings => Set<AgentBoardSettings>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

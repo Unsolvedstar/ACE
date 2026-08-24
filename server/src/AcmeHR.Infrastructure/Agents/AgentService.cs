@@ -7,7 +7,11 @@ using Microsoft.Extensions.Options;
 
 namespace AcmeHR.Infrastructure.Agents;
 
-public class AgentService(ApplicationDbContext dbContext, IAiProvider aiProvider, IOptions<AiProviderSettings> aiProviderSettings) : IAgentService
+public class AgentService(
+    ApplicationDbContext dbContext,
+    IAiProvider aiProvider,
+    IOptions<AiProviderSettings> aiProviderSettings,
+    AgentToolDispatcher toolDispatcher) : IAgentService
 {
     public async Task<Result<AgentConversationDto>> GetOrCreateConversationAsync(
         Guid boardId, Guid employeeId, CancellationToken cancellationToken = default)
@@ -83,7 +87,7 @@ public class AgentService(ApplicationDbContext dbContext, IAiProvider aiProvider
         var boardContext = await BuildBoardContextAsync(boardId, cancellationToken);
 
         var response = await aiProvider.GetChatResponseAsync(
-            new AiChatRequest(boardContext, history, request.Content, ToolsEnabled: false), cancellationToken);
+            new AiChatRequest(boardContext, history, request.Content, ToolsEnabled: true), cancellationToken);
 
         var now = DateTime.UtcNow;
         var userMessage = new AgentMessage
@@ -108,7 +112,22 @@ public class AgentService(ApplicationDbContext dbContext, IAiProvider aiProvider
         conversation.LastMessageAtUtc = now;
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return Result<AgentChatTurnResultDto>.Success(new AgentChatTurnResultDto(ToDto(userMessage), ToDto(assistantMessage)));
+        var proposedActions = new List<AgentActionAuditDto>();
+        if (response.ProposedToolCalls.Count > 0)
+        {
+            var settings = await dbContext.AgentBoardSettings.FirstOrDefaultAsync(s => s.BoardId == boardId, cancellationToken);
+            var autoExecute = settings?.AutoExecuteEnabled ?? false;
+
+            foreach (var toolCall in response.ProposedToolCalls)
+            {
+                var audit = await toolDispatcher.CreateProposalAsync(
+                    boardId, conversation.Id, employeeId, toolCall, autoExecute, cancellationToken);
+                proposedActions.Add(await ToActionDtoAsync(audit, cancellationToken));
+            }
+        }
+
+        return Result<AgentChatTurnResultDto>.Success(
+            new AgentChatTurnResultDto(ToDto(userMessage), ToDto(assistantMessage), proposedActions));
     }
 
     public async Task<Result<AgentSummaryDto>> GetStandupSummaryAsync(
@@ -192,6 +211,30 @@ public class AgentService(ApplicationDbContext dbContext, IAiProvider aiProvider
         }
 
         return await dbContext.BoardMembers.AnyAsync(m => m.BoardId == boardId && m.EmployeeId == requesterId, cancellationToken);
+    }
+
+    private async Task<AgentActionAuditDto> ToActionDtoAsync(AgentActionAudit audit, CancellationToken cancellationToken)
+    {
+        var requestedBy = await dbContext.Employees.FindAsync([audit.RequestedByEmployeeId], cancellationToken);
+        Employee? decidedBy = audit.DecidedByEmployeeId is { } decidedId
+            ? await dbContext.Employees.FindAsync([decidedId], cancellationToken)
+            : null;
+
+        return new AgentActionAuditDto(
+            audit.Id,
+            audit.BoardId,
+            audit.ToolName,
+            audit.Summary,
+            audit.TargetTaskId,
+            audit.Status,
+            audit.ResultDetail,
+            audit.RequestedByEmployeeId,
+            requestedBy?.FullName ?? "Unknown",
+            audit.DecidedByEmployeeId,
+            decidedBy?.FullName,
+            audit.DecidedAtUtc,
+            audit.CreatedAtUtc,
+            audit.ExecutedAtUtc);
     }
 
     private static AgentConversationDto ToDto(AgentConversation conversation) =>

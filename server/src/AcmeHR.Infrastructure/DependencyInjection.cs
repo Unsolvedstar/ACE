@@ -141,7 +141,10 @@ public static class DependencyInjection
         services.AddScoped<IBoardTaskService, Boards.BoardTaskService>();
         services.AddScoped<IBoardPerformanceService, Boards.BoardPerformanceService>();
         services.AddScoped<IDocumentSigningService, Documents.DocumentSigningService>();
+        services.AddScoped<Agents.AgentToolDispatcher>();
         services.AddScoped<IAgentService, Agents.AgentService>();
+        services.AddScoped<IAgentActionService, Agents.AgentActionService>();
+        services.AddScoped<IAgentSettingsService, Agents.AgentSettingsService>();
         // AiProvider:Provider selects the implementation; only "Mock" (default) exists so far.
         // A real LLM provider (e.g. AnthropicClaudeAiProvider, registered via AddHttpClient)
         // slots in here later without touching any Agents call site.

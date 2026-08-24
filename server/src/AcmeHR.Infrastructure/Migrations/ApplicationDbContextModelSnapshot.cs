@@ -54,6 +54,102 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.ToTable("Acknowledgments", (string)null);
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentActionAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ArgumentsJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DecidedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DecidedByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ExecutedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RequestedByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResultDetail")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid?>("TargetTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ToolName")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("DecidedByEmployeeId");
+
+                    b.HasIndex("RequestedByEmployeeId");
+
+                    b.HasIndex("TargetTaskId");
+
+                    b.HasIndex("BoardId", "Status");
+
+                    b.ToTable("AgentActionAudits", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentBoardSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("AutoExecuteEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UpdatedByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BoardId")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedByEmployeeId");
+
+                    b.ToTable("AgentBoardSettings", (string)null);
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.AgentConversation", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1486,6 +1582,65 @@ namespace AcmeHR.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentActionAudit", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Board", "Board")
+                        .WithMany()
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.AgentConversation", "Conversation")
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "DecidedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("DecidedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "RequestedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("RequestedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.BoardTask", "TargetTask")
+                        .WithMany()
+                        .HasForeignKey("TargetTaskId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Board");
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("DecidedByEmployee");
+
+                    b.Navigation("RequestedByEmployee");
+
+                    b.Navigation("TargetTask");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.AgentBoardSettings", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Board", "Board")
+                        .WithMany()
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "UpdatedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+
+                    b.Navigation("UpdatedByEmployee");
                 });
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.AgentConversation", b =>

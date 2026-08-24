@@ -9,10 +9,17 @@ function hubUrl(): string {
 
 /** Joins the given board's SignalR group and calls onBoardUpdated whenever the server
  * broadcasts a change (task created/updated/status changed/deleted) — used to silently
- * refetch instead of tracking a live document diff. */
-export function useBoardHub(boardId: string | undefined, onBoardUpdated: () => void) {
+ * refetch instead of tracking a live document diff. onAgentActivityUpdated fires when the
+ * AI assistant proposes, executes, or has one of its actions approved/rejected. */
+export function useBoardHub(
+  boardId: string | undefined,
+  onBoardUpdated: () => void,
+  onAgentActivityUpdated?: () => void,
+) {
   const callbackRef = useRef(onBoardUpdated);
   callbackRef.current = onBoardUpdated;
+  const agentCallbackRef = useRef(onAgentActivityUpdated);
+  agentCallbackRef.current = onAgentActivityUpdated;
 
   useEffect(() => {
     if (!boardId) return;
@@ -24,6 +31,7 @@ export function useBoardHub(boardId: string | undefined, onBoardUpdated: () => v
       .build();
 
     connection.on("BoardUpdated", () => callbackRef.current());
+    connection.on("AgentActivityUpdated", () => agentCallbackRef.current?.());
 
     let isDisposed = false;
     connection

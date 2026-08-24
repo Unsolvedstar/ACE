@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, FileDown, Plus, Settings2, Sparkles, UserPlus } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { addBoardMember, getBoardById, updateBoard } from "../api/boards";
+import { getAgentSettings, updateAgentSettings } from "../api/agentSettings";
 import { changeBoardTaskStatus, createBoardTask, deleteBoardTask, downloadWeeklySummaryPdf, getTasksForBoard, updateBoardTask } from "../api/boardTasks";
 import { extractErrorMessage } from "../api/client";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -12,6 +13,7 @@ import { PersonAvatar } from "../components/boards/PersonAvatar";
 import { TaskCard } from "../components/boards/TaskCard";
 import { TaskFormDialog, type TaskFormValues } from "../components/boards/TaskFormDialog";
 import { useBoardHub } from "../lib/useBoardHub";
+import { EmployeeRole } from "../types/auth";
 import {
   BoardPriority,
   BoardPriorityLabels,
@@ -22,6 +24,8 @@ import {
   type BoardDto,
   type BoardTaskDto,
 } from "../types/board";
+
+const AGENT_ACTION_APPROVER_ROLES: EmployeeRole[] = [EmployeeRole.LineManager, EmployeeRole.HR, EmployeeRole.Executive];
 
 const COLUMNS: { status: BoardTaskStatus; color: string }[] = [
   { status: BoardTaskStatus.Todo, color: "#8e9195" },
@@ -51,11 +55,13 @@ export function BoardDetailPage() {
 
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const [isAgentPanelOpen, setIsAgentPanelOpen] = useState(false);
+  const [agentActivityVersion, setAgentActivityVersion] = useState(0);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsPriority, setSettingsPriority] = useState<BoardPriority>(BoardPriority.Normal);
   const [settingsStatus, setSettingsStatus] = useState<BoardStatus>(BoardStatus.NotStarted);
   const [settingsDeadline, setSettingsDeadline] = useState("");
+  const [settingsAutoExecute, setSettingsAutoExecute] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
@@ -76,11 +82,13 @@ export function BoardDetailPage() {
       .finally(() => setIsLoading(false));
   }, [boardId, loadTasks]);
 
-  useBoardHub(boardId, loadTasks);
+  useBoardHub(boardId, loadTasks, () => setAgentActivityVersion((v) => v + 1));
 
   const isOwner = !!board && !!session && board.ownerEmployeeId === session.employeeId;
   // The owner is always included in board.members too, so this covers both.
   const isMember = !!board && !!session && board.members.some((m) => m.employeeId === session.employeeId);
+  const canDecideAgentActions =
+    isOwner || (isMember && !!session && AGENT_ACTION_APPROVER_ROLES.includes(session.role));
 
   const tasksByColumn = useMemo(() => {
     const grouped = new Map<BoardTaskStatus, BoardTaskDto[]>();
@@ -163,12 +171,15 @@ export function BoardDetailPage() {
   }
 
   function openSettings() {
-    if (!board) return;
+    if (!board || !boardId) return;
     setSettingsPriority(board.priority);
     setSettingsStatus(board.status);
     setSettingsDeadline(board.deadline ?? "");
     setSettingsError(null);
     setIsSettingsOpen(true);
+    getAgentSettings(boardId)
+      .then((s) => setSettingsAutoExecute(s.autoExecuteEnabled))
+      .catch((err) => setSettingsError(extractErrorMessage(err)));
   }
 
   async function handleSaveSettings() {
@@ -184,6 +195,7 @@ export function BoardDetailPage() {
         status: settingsStatus,
         deadline: settingsDeadline || undefined,
       });
+      await updateAgentSettings(boardId, { autoExecuteEnabled: settingsAutoExecute });
       setBoard(updated);
       setIsSettingsOpen(false);
     } catch (err) {
@@ -376,7 +388,12 @@ export function BoardDetailPage() {
       )}
 
       {isAgentPanelOpen && boardId && (
-        <AgentChatPanel boardId={boardId} onClose={() => setIsAgentPanelOpen(false)} />
+        <AgentChatPanel
+          boardId={boardId}
+          canDecideActions={canDecideAgentActions}
+          refreshSignal={agentActivityVersion}
+          onClose={() => setIsAgentPanelOpen(false)}
+        />
       )}
 
       {taskPendingDelete && (
@@ -431,6 +448,23 @@ export function BoardDetailPage() {
                   onChange={(e) => setSettingsDeadline(e.target.value)}
                   className="rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white focus:border-[#6fbe44] focus:outline-none"
                 />
+              </label>
+              <label className="flex items-start gap-2 rounded-lg border border-white/10 bg-[#202325] px-3 py-2.5 text-sm text-white/70">
+                <input
+                  type="checkbox"
+                  checked={settingsAutoExecute}
+                  onChange={(e) => setSettingsAutoExecute(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 accent-[#6fbe44]"
+                />
+                <span>
+                  <span className="font-medium text-white">Let the AI assistant act automatically</span>
+                  <br />
+                  <span className="text-xs text-white/40">
+                    {settingsAutoExecute
+                      ? "The assistant executes task actions immediately."
+                      : "The assistant proposes actions for a manager to approve first (default)."}
+                  </span>
+                </span>
               </label>
             </div>
             {settingsError && <p className="mt-2 text-sm text-[#e69c9c]">{settingsError}</p>}

@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using AcmeHR.Application.Agents;
 
 namespace AcmeHR.Infrastructure.Agents;
@@ -14,6 +16,15 @@ public class RuleBasedAiProvider : IAiProvider
     {
         var message = request.UserMessage.Trim();
         var lower = message.ToLowerInvariant();
+
+        if (request.ToolsEnabled)
+        {
+            var toolCall = TryBuildToolCall(message, request.Board);
+            if (toolCall is not null)
+            {
+                return Task.FromResult(new AiChatResponse("On it — I've proposed that action.", new[] { toolCall }));
+            }
+        }
 
         string reply;
         if (lower.Contains("overdue"))
@@ -41,6 +52,114 @@ public class RuleBasedAiProvider : IAiProvider
 
     public Task<AiTaskSuggestion> SuggestTaskFieldsAsync(AiTaskSuggestionRequest request, CancellationToken cancellationToken = default) =>
         Task.FromResult(new AiTaskSuggestion(null, null, null, null, null, null));
+
+    // Deliberately conservative: only clearly-structured phrasings propose a mutation. Anything
+    // ambiguous falls through to the read-only rules above rather than guessing at intent.
+    private static AiToolCall? TryBuildToolCall(string message, AiBoardContext board)
+    {
+        var createMatch = Regex.Match(
+            message, "^create task \"(?<title>.+?)\"(?: for (?<assignee>.+?))?(?: by (?<due>.+))?$", RegexOptions.IgnoreCase);
+        if (createMatch.Success)
+        {
+            var assignee = createMatch.Groups["assignee"].Success ? FindMemberByName(board, createMatch.Groups["assignee"].Value) : null;
+            var dueDate = createMatch.Groups["due"].Success ? ResolveDatePhrase(createMatch.Groups["due"].Value) : null;
+            return new AiToolCall(nameof(Domain.Enums.AgentToolName.CreateTask), SerializeArgs(new
+            {
+                Title = createMatch.Groups["title"].Value,
+                Description = (string?)null,
+                AssigneeEmployeeId = assignee?.EmployeeId,
+                DueDate = dueDate,
+            }));
+        }
+
+        var moveMatch = Regex.Match(
+            message, "^(?:mark|move) \"(?<title>.+?)\" (?:to )?(?<status>done|in progress|todo)$", RegexOptions.IgnoreCase);
+        if (moveMatch.Success)
+        {
+            var task = FindTaskByTitle(board, moveMatch.Groups["title"].Value);
+            var status = moveMatch.Groups["status"].Value.ToLowerInvariant() switch
+            {
+                "done" => Domain.Enums.BoardTaskStatus.Done,
+                "in progress" => Domain.Enums.BoardTaskStatus.InProgress,
+                _ => Domain.Enums.BoardTaskStatus.Todo,
+            };
+            if (task is not null)
+            {
+                return new AiToolCall(nameof(Domain.Enums.AgentToolName.UpdateTaskStatus), SerializeArgs(new
+                {
+                    TaskId = task.TaskId,
+                    Status = status,
+                }));
+            }
+        }
+
+        var assignMatch = Regex.Match(message, "^assign \"(?<title>.+?)\" to (?<assignee>.+)$", RegexOptions.IgnoreCase);
+        if (assignMatch.Success)
+        {
+            var task = FindTaskByTitle(board, assignMatch.Groups["title"].Value);
+            var assignee = FindMemberByName(board, assignMatch.Groups["assignee"].Value);
+            if (task is not null && assignee is not null)
+            {
+                return new AiToolCall(nameof(Domain.Enums.AgentToolName.AssignTask), SerializeArgs(new
+                {
+                    TaskId = task.TaskId,
+                    AssigneeEmployeeId = assignee.EmployeeId,
+                }));
+            }
+        }
+
+        var deadlineMatch = Regex.Match(
+            message, "^(?:set|change) (?:the )?deadline (?:for|of) \"(?<title>.+?)\" to (?<due>.+)$", RegexOptions.IgnoreCase);
+        if (deadlineMatch.Success)
+        {
+            var task = FindTaskByTitle(board, deadlineMatch.Groups["title"].Value);
+            var dueDate = ResolveDatePhrase(deadlineMatch.Groups["due"].Value);
+            if (task is not null && dueDate is not null)
+            {
+                return new AiToolCall(nameof(Domain.Enums.AgentToolName.SetDeadline), SerializeArgs(new
+                {
+                    TaskId = task.TaskId,
+                    DueDate = dueDate,
+                }));
+            }
+        }
+
+        return null;
+    }
+
+    private static AiBoardMemberContext? FindMemberByName(AiBoardContext board, string namePart) =>
+        board.Members.FirstOrDefault(m => string.Equals(m.FullName, namePart.Trim(), StringComparison.OrdinalIgnoreCase))
+        ?? board.Members.FirstOrDefault(m => m.FullName.Contains(namePart.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private static AiBoardTaskContext? FindTaskByTitle(AiBoardContext board, string titlePart) =>
+        board.Tasks.FirstOrDefault(t => string.Equals(t.Title, titlePart.Trim(), StringComparison.OrdinalIgnoreCase))
+        ?? board.Tasks.FirstOrDefault(t => t.Title.Contains(titlePart.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private static readonly string[] Weekdays =
+        ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+    private static DateOnly? ResolveDatePhrase(string phrase)
+    {
+        var trimmed = phrase.Trim().TrimEnd('.').ToLowerInvariant();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        if (trimmed == "today") return today;
+        if (trimmed == "tomorrow") return today.AddDays(1);
+
+        var weekdayIndex = Array.IndexOf(Weekdays, trimmed);
+        if (weekdayIndex >= 0)
+        {
+            var daysAhead = ((weekdayIndex - (int)today.DayOfWeek) + 7) % 7;
+            daysAhead = daysAhead == 0 ? 7 : daysAhead;
+            return today.AddDays(daysAhead);
+        }
+
+        return DateOnly.TryParse(trimmed, out var parsed) ? parsed : null;
+    }
+
+    private static readonly JsonSerializerOptions ArgsJsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    private static string SerializeArgs<T>(T args) => JsonSerializer.Serialize(args, ArgsJsonOptions);
 
     private static string DescribeOverdueTasks(AiBoardContext board)
     {

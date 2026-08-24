@@ -8,6 +8,31 @@ public record AgentConversationDto(Guid Id, Guid BoardId, DateTime CreatedAtUtc,
 
 public record SendAgentMessageRequest(string Content);
 
-public record AgentChatTurnResultDto(AgentMessageDto UserMessage, AgentMessageDto AssistantMessage);
+public record AgentChatTurnResultDto(
+    AgentMessageDto UserMessage,
+    AgentMessageDto AssistantMessage,
+    IReadOnlyList<AgentActionAuditDto> ProposedActions);
 
 public record AgentSummaryDto(string Summary);
+
+public record AgentActionAuditDto(
+    Guid Id,
+    Guid BoardId,
+    AgentToolName ToolName,
+    string Summary,
+    Guid? TargetTaskId,
+    AgentActionStatus Status,
+    string? ResultDetail,
+    Guid RequestedByEmployeeId,
+    string RequestedByEmployeeName,
+    Guid? DecidedByEmployeeId,
+    string? DecidedByEmployeeName,
+    DateTime? DecidedAtUtc,
+    DateTime CreatedAtUtc,
+    DateTime? ExecutedAtUtc);
+
+public record RejectAgentActionRequest(string? Reason);
+
+public record AgentBoardSettingsDto(Guid BoardId, bool AutoExecuteEnabled, DateTime UpdatedAtUtc);
+
+public record UpdateAgentBoardSettingsRequest(bool AutoExecuteEnabled);
