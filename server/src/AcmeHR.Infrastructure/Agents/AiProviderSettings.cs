@@ -4,9 +4,10 @@ public class AiProviderSettings
 {
     public const string SectionName = "AiProvider";
 
-    // "Mock" (default, no external calls) | "AnthropicClaude" (not implemented yet)
+    // "Mock" (default, no external calls) | "Ollama" (free local model) | "AnthropicClaude" (not implemented yet)
     public string Provider { get; set; } = "Mock";
     public string? ApiKey { get; set; }
     public string? Model { get; set; }
+    public string? BaseUrl { get; set; }
     public int MaxHistoryMessages { get; set; } = 20;
 }

@@ -88,6 +88,24 @@ uvicorn main:app --port 8010
 
 Runs alongside the .NET API and Postgres — start it before (or alongside) `dotnet run` if you want the parser panel to work locally. Everything else on the Timesheet page works without it.
 
+### AI agent provider (boards)
+
+The AI assistant on a board (chat, task creation/updates, summaries, task-field suggestions) sits behind `IAiProvider` (`AcmeHR.Application.Agents`), configured via the `AiProvider` section and `AiProvider:Provider`:
+
+- **`Mock`** (default) — `RuleBasedAiProvider`, deterministic logic reading real board data straight from the database. No setup, no external calls, no cost. Good enough to demo/test the whole feature.
+- **`Ollama`** — `OllamaAiProvider`, calls a free, locally-running [Ollama](https://ollama.com) server. No API key, no per-token billing — inference runs on your own machine.
+  ```
+  winget install Ollama.Ollama   # or download from ollama.com
+  ollama pull llama3.2           # or any tool-calling-capable model
+  ```
+  Then set (e.g. in `appsettings.Development.json`, which is gitignored):
+  ```json
+  "AiProvider": { "Provider": "Ollama", "BaseUrl": "http://localhost:11434", "Model": "llama3.2" }
+  ```
+- **`AnthropicClaude`** — not implemented yet; see `AgentToolDispatcher`/`IAiProvider` for the seam it would plug into.
+
+Switching providers is a config change only — no code changes needed anywhere that calls `IAgentService`.
+
 ### Frontend
 
 ```

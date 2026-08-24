@@ -145,10 +145,27 @@ public static class DependencyInjection
         services.AddScoped<IAgentService, Agents.AgentService>();
         services.AddScoped<IAgentActionService, Agents.AgentActionService>();
         services.AddScoped<IAgentSettingsService, Agents.AgentSettingsService>();
-        // AiProvider:Provider selects the implementation; only "Mock" (default) exists so far.
-        // A real LLM provider (e.g. AnthropicClaudeAiProvider, registered via AddHttpClient)
-        // slots in here later without touching any Agents call site.
-        services.AddScoped<IAiProvider, Agents.RuleBasedAiProvider>();
+
+        // AiProvider:Provider selects the implementation: "Mock" (default, zero external calls),
+        // "Ollama" (free local model, no API key/billing — requires Ollama running locally), or
+        // later "AnthropicClaude". No Agents call site changes when switching between them.
+        var aiProviderSettings = configuration.GetSection(Agents.AiProviderSettings.SectionName).Get<Agents.AiProviderSettings>()
+            ?? new Agents.AiProviderSettings();
+        if (string.Equals(aiProviderSettings.Provider, "Ollama", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddHttpClient<IAiProvider, Agents.OllamaAiProvider>((sp, client) =>
+            {
+                var opts = sp.GetRequiredService<IOptions<Agents.AiProviderSettings>>().Value;
+                client.BaseAddress = new Uri(string.IsNullOrWhiteSpace(opts.BaseUrl) ? "http://localhost:11434" : opts.BaseUrl);
+                // Local model inference (especially the first call after a cold start) can take
+                // a while on modest hardware — well beyond a typical API call's timeout.
+                client.Timeout = TimeSpan.FromMinutes(3);
+            });
+        }
+        else
+        {
+            services.AddScoped<IAiProvider, Agents.RuleBasedAiProvider>();
+        }
 
         services.AddHttpClient<IClockingReportParserService, Timesheet.ClockingReportParserService>((sp, client) =>
         {
