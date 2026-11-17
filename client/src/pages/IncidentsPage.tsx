@@ -34,7 +34,7 @@ function initialForm(): IncidentForm {
 export function IncidentsPage() {
   const { session } = useAuth();
   const canReview = session
-    ? [EmployeeRole.SafetyOfficer, EmployeeRole.HR, EmployeeRole.Executive].includes(session.role)
+    ? ([EmployeeRole.SafetyOfficer, EmployeeRole.HR, EmployeeRole.Executive] as EmployeeRole[]).includes(session.role)
     : false;
 
   const [myReports, setMyReports] = useState<IncidentReportDto[]>([]);
