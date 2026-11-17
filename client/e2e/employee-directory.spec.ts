@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { BOOTSTRAP_PASSWORD } from "./credentials";
 
 test.describe("Employee directory", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("hr.admin@acmehr.local");
-    await page.getByLabel("Password").fill("Bootstrap@123");
+    await page.getByLabel("Password").fill(BOOTSTRAP_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("http://localhost:5173/");
 

@@ -19,6 +19,9 @@ client/test-results/
 client/playwright-report/
 client/blob-report/
 
+# Local environment files (copy .env.example -> .env)
+.env
+
 # Mobile (Expo / React Native)
 mobile/node_modules/
 mobile/.expo/
@@ -33,6 +36,7 @@ mobile/*.key
 mobile/*.mobileprovision
 mobile/.metro-health-check*
 mobile/*.tsbuildinfo
+mobile/.env
 mobile/.env*.local
 mobile/ios/
 mobile/android/

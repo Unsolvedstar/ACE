@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { BOOTSTRAP_PASSWORD } from "./credentials";
 
 test.describe("Authentication", () => {
   test("shows an error for invalid credentials", async ({ page }) => {
@@ -14,10 +15,12 @@ test.describe("Authentication", () => {
   test("logs in with valid credentials and can log out", async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("hr.admin@acmehr.local");
-    await page.getByLabel("Password").fill("Bootstrap@123");
+    await page.getByLabel("Password").fill(BOOTSTRAP_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
 
     await page.waitForURL("http://localhost:5173/");
+    // The account menu (avatar, top-right) holds the signed-in name and Sign out.
+    await page.getByRole("button", { name: "Account" }).click();
     await expect(page.getByText("HR Admin")).toBeVisible();
 
     await page.getByRole("button", { name: "Sign out" }).click();

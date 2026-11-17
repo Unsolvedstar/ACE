@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: acme_hr
       POSTGRES_USER: acme_app
-      POSTGRES_PASSWORD: acmehr_dev_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}
     ports:
       - "5432:5432"
     volumes:
@@ -21,8 +21,9 @@ services:
       dockerfile: src/AcmeHR.Api/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=acme_hr;Username=acme_app;Password=acmehr_dev_password"
-      Jwt__Key: "docker-local-dev-signing-key-please-change-before-any-real-deployment"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=acme_hr;Username=acme_app;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (see .env.example)}"
+      Jwt__Key: "${JWT_KEY:?Set JWT_KEY in .env (see .env.example)}"
+      Seed__BootstrapPassword: "${SEED_BOOTSTRAP_PASSWORD:-}"
       Jwt__Issuer: AcmeHR
       Jwt__Audience: AcmeHR.Client
       Jwt__ExpiryMinutes: "60"

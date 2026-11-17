@@ -82,6 +82,9 @@ jobs:
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest
+    env:
+      # Throwaway password for the ephemeral CI database only; satisfies the Identity password policy.
+      E2E_BOOTSTRAP_PASSWORD: "Ci-Bootstrap-0123!"
     services:
       postgres:
         image: postgres:16-alpine
@@ -120,6 +123,7 @@ jobs:
           Jwt__Issuer: AcmeHR
           Jwt__Audience: AcmeHR.Client
           Jwt__ExpiryMinutes: "60"
+          Seed__BootstrapPassword: ${{ env.E2E_BOOTSTRAP_PASSWORD }}
         run: |
           nohup dotnet run --project src/AcmeHR.Api --urls http://localhost:5167 > api.log 2>&1 &
           disown

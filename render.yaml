@@ -36,6 +36,10 @@ services:
           property: connectionString
       - key: Jwt__Key
         generateValue: true
+      # Password for the bootstrap HR/Executive accounts created on first deploy. Set it in the
+      # Render dashboard (Environment tab) - never commit it. Without it, no accounts are seeded.
+      - key: Seed__BootstrapPassword
+        sync: false
       - key: Jwt__Issuer
         value: AcmeHR
       - key: Jwt__Audience

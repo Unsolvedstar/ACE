@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { BOOTSTRAP_PASSWORD } from "./credentials";
 
 test.describe("Incidents & Near Miss", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("hr.admin@acmehr.local");
-    await page.getByLabel("Password").fill("Bootstrap@123");
+    await page.getByLabel("Password").fill(BOOTSTRAP_PASSWORD);
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("http://localhost:5173/");
     await page.goto("/incidents");

@@ -39,14 +39,20 @@ dotnet run --project src/AcmeHR.Api
 
 `Jwt:Issuer`/`Jwt:Audience`/`Jwt:ExpiryMinutes` have defaults in `appsettings.json`; `Jwt:Key` and `ConnectionStrings:Default` are dev secrets and must be set via `dotnet user-secrets` (never committed).
 
-On startup in Development, the API auto-seeds the `EmployeeRole` Identity roles, a default site ("Head Office"), and two bootstrap admin accounts so the app is usable from a fresh database:
+On startup the API auto-applies migrations and seeds the `EmployeeRole` Identity roles, a default site ("Head Office"), and two bootstrap admin accounts so the app is usable from a fresh database:
 
-| Email | Password | Role |
-| --- | --- | --- |
-| `hr.admin@acmehr.local` | `Bootstrap@123` | HR |
-| `exec.admin@acmehr.local` | `Bootstrap@123` | Executive |
+| Email | Role |
+| --- | --- |
+| `hr.admin@acmehr.local` | HR |
+| `exec.admin@acmehr.local` | Executive |
 
-Dev-only credentials — change or remove `DatabaseSeeder.SeedBootstrapAccountAsync` before any non-local deployment. `POST /api/auth/register` (public self-registration) only ever creates `Employee`-role accounts; the HR bootstrap account (or any account HR promotes) can assign a different role to an existing employee via `PATCH /api/employees/{id}/role`.
+Both accounts get the password you configure in `Seed:BootstrapPassword` — it is deliberately **not** hard-coded anywhere. Set it before the first run (it must satisfy the Identity password policy: upper, lower, digit, symbol):
+
+```
+dotnet user-secrets set "Seed:BootstrapPassword" "<choose-a-password>" --project src/AcmeHR.Api
+```
+
+If it isn't set, the API logs a warning and skips creating these accounts. It only applies to accounts that don't exist yet — an already-seeded database keeps its existing passwords. `POST /api/auth/register` (public self-registration) only ever creates `Employee`-role accounts; the HR bootstrap account (or any account HR promotes) can assign a different role to an existing employee via `PATCH /api/employees/{id}/role`.
 
 API available at `http://localhost:5167` (Swagger UI at `/swagger` in Development).
 
@@ -128,17 +134,18 @@ npx playwright install chromium   # first time only
 npm run test:e2e
 ```
 
-Playwright specs under `client/e2e/` cover login (valid/invalid credentials, logout), the dashboard, Employee Directory search/pagination, and building/running a workflow, run against a real running backend + frontend (start both first, per above). Also wired into CI (see the `e2e` job in `.github/workflows/ci.yml`), which brings up a throwaway Postgres, lets the API auto-migrate/seed against it, starts the Vite dev server, then runs this suite headless against both.
+Set `E2E_BOOTSTRAP_PASSWORD` to the same value as the API's `Seed:BootstrapPassword` first (the specs sign in as the seeded HR account and refuse to run without it). Playwright specs under `client/e2e/` cover login (valid/invalid credentials, logout), the dashboard, Employee Directory search/pagination, and building/running a workflow, run against a real running backend + frontend (start both first, per above). Also wired into CI (see the `e2e` job in `.github/workflows/ci.yml`), which brings up a throwaway Postgres, lets the API auto-migrate/seed against it, starts the Vite dev server, then runs this suite headless against both.
 
 ### Docker (local only)
 
 ```
+cp .env.example .env     # then fill in POSTGRES_PASSWORD, JWT_KEY and SEED_BOOTSTRAP_PASSWORD
 docker compose up --build
 ```
 
-Starts Postgres, the API (`http://localhost:5167`), and the web portal behind nginx (`http://localhost:5173`) as three containers. The API auto-applies EF Core migrations and seeds roles/site/bootstrap accounts on startup (same seeded accounts as above), so a fresh `docker compose up` needs no manual migration step.
+`.env` is git-ignored, and compose refuses to start if `POSTGRES_PASSWORD` or `JWT_KEY` is missing. This starts Postgres, the API (`http://localhost:5167`), and the web portal behind nginx (`http://localhost:5173`) as three containers. The API auto-applies EF Core migrations and seeds roles/site/bootstrap accounts on startup (same seeded accounts as above, using `SEED_BOOTSTRAP_PASSWORD`), so a fresh `docker compose up` needs no manual migration step.
 
-This compose file is for local use only, not a production deployment: it runs the API in the `Development` environment (Swagger enabled, verbose EF logging), uses a hardcoded `Jwt__Key` and Postgres password defined directly in `docker-compose.yml`, and serves everything over plain HTTP. Replace those before deploying anywhere real.
+This compose file is for local use only, not a production deployment: it runs the API in the `Development` environment (Swagger enabled, verbose EF logging), takes its `Jwt__Key` and Postgres password from your local `.env`, and serves everything over plain HTTP. Replace those before deploying anywhere real.
 
 ### Deploying to Render (shared testing URL)
 
@@ -146,16 +153,11 @@ This compose file is for local use only, not a production deployment: it runs th
 
 1. Push this repo to GitHub (Render deploys from a Git remote, not a local working copy).
 2. In the [Render dashboard](https://dashboard.render.com), click **New +** -> **Blueprint** and point it at the repo. Render reads `render.yaml` and shows a preview of the 3 resources it's about to create (`acme-hr-db`, `acme-hr-api`, `acme-hr-client`) — click **Apply**.
-3. Set up attachment storage: `render.yaml` points `acme-hr-api` at an S3-compatible bucket (`Storage__Provider=S3`) instead of the container's own disk, since that disk is wiped on every redeploy/restart — anything uploaded (PPE certs, medical docs, policy PDFs, ...) would otherwise vanish the next time you ship a change. Create a bucket in [Cloudflare R2](https://dash.cloudflare.com) (has a generous free tier) and an API token scoped to it, then in `acme-hr-api`'s **Environment** tab fill in the four secret values `render.yaml` left blank (`sync: false`): `Storage__S3ServiceUrl` (your R2 account's S3 endpoint, `https://<account_id>.r2.cloudflarestorage.com`), `Storage__S3BucketName`, `Storage__S3AccessKeyId`, `Storage__S3SecretAccessKey`.
+3. Set up attachment storage: `render.yaml` points `acme-hr-api` at an S3-compatible bucket (`Storage__Provider=S3`) instead of the container's own disk, since that disk is wiped on every redeploy/restart — anything uploaded (PPE certs, medical docs, policy PDFs, ...) would otherwise vanish the next time you ship a change. Create a bucket in [Cloudflare R2](https://dash.cloudflare.com) (has a generous free tier) and an API token scoped to it, then in `acme-hr-api`'s **Environment** tab fill in the four secret values `render.yaml` left blank (`sync: false`): `Storage__S3ServiceUrl` (your R2 account's S3 endpoint, `https://<account_id>.r2.cloudflarestorage.com`), `Storage__S3BucketName`, `Storage__S3AccessKeyId`, `Storage__S3SecretAccessKey`. In the same tab, also fill in `Seed__BootstrapPassword` (also `sync: false`) — the password for the bootstrap HR/Executive accounts. Use a strong value that satisfies the Identity password policy; without it the API still deploys but creates no accounts, so you couldn't sign in.
 4. First deploy takes a few minutes (Postgres provisioning + Docker/npm builds). Once the API service is live, open its **Logs** tab and confirm you see `Applying migration...` and no seeding errors — that means the bootstrap accounts below now exist on the live database.
 5. Open the client service's URL (shown on its dashboard page, `https://acme-hr-client.onrender.com` unless the name was suffixed — see step 6) and sign in with the same bootstrap credentials as local dev:
 
-   | Email | Password | Role |
-   | --- | --- | --- |
-   | `hr.admin@acmehr.local` | `Bootstrap@123` | HR |
-   | `exec.admin@acmehr.local` | `Bootstrap@123` | Executive |
-
-   **Change these passwords (Settings > Change password) before sharing the URL with real testers** — they're the same publicly-documented defaults used locally.
+   `hr.admin@acmehr.local` (HR) or `exec.admin@acmehr.local` (Executive), with the password you set in `Seed__BootstrapPassword` (step 3). Consider changing these passwords (Settings > Change password) before sharing the URL with real testers.
 6. If Render suffixed either service's name (only happens if `acme-hr-api`/`-client` were already taken), the API's `Cors__AllowedOrigins__0` env var and the client's `VITE_API_BASE_URL` build-time env var (both set in `render.yaml`) won't match the real URLs. Update them in each service's **Environment** tab to the actual URLs shown on the dashboard, then trigger a manual redeploy of both (the client needs a rebuild since `VITE_API_BASE_URL` is baked into the JS bundle at build time, not read at runtime).
 
 Free-tier caveats — fine for testing, revisit before treating this as a real deployment:
