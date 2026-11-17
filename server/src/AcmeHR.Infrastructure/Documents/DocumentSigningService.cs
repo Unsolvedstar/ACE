@@ -20,6 +20,7 @@ public class DocumentSigningService : IDocumentSigningService
         using var signatureImage = XImage.FromStream(signatureStream);
         var signatureHeight = SignatureWidthPoints * signatureImage.PointHeight / signatureImage.PointWidth;
 
+        PdfFontSetup.EnsureConfigured();
         var font = new XFont("Arial", 8, XFontStyleEx.Regular);
 
         foreach (var page in document.Pages.Cast<PdfPage>())

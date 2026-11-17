@@ -36,6 +36,7 @@ public class DocumentSigningServiceTests
 
     private static byte[] BuildSamplePdf()
     {
+        PdfFontSetup.EnsureConfigured();
         using var document = new PdfDocument();
         var page = document.AddPage();
         using var gfx = XGraphics.FromPdfPage(page);

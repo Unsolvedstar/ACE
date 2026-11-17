@@ -25,6 +25,9 @@ jobs:
         working-directory: server
         run: dotnet build --no-restore --configuration Release
 
+      - name: Install fonts (PDF signing tests need a TrueType font)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fonts-liberation
+
       - name: Test
         working-directory: server
         run: dotnet test --no-build --configuration Release --logger "console;verbosity=normal"
