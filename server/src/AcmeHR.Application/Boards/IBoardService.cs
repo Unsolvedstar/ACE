@@ -21,4 +21,7 @@ public interface IBoardService
 
     Task<Result<BoardDto>> RemoveMemberAsync(
         Guid boardId, Guid ownerEmployeeId, Guid employeeId, CancellationToken cancellationToken = default);
+
+    Task<Result<BoardDto>> MoveAsync(
+        Guid boardId, Guid ownerEmployeeId, MoveBoardRequest request, CancellationToken cancellationToken = default);
 }

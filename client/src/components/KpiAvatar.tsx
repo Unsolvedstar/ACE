@@ -11,7 +11,7 @@ interface KpiAvatarProps {
 export function KpiAvatar({ name, size = 32 }: KpiAvatarProps) {
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full border-2 border-[#6fbe44] bg-[#549938] font-semibold text-white"
+      className="flex shrink-0 items-center justify-center rounded-full border-2 border-white bg-slate-700 font-semibold text-white"
       style={{ width: size, height: size, fontSize: size * 0.4 }}
     >
       {initials(name)}

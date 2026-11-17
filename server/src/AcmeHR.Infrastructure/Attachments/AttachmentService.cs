@@ -4,11 +4,10 @@ using AcmeHR.Domain.Entities;
 using AcmeHR.Domain.Enums;
 using AcmeHR.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace AcmeHR.Infrastructure.Attachments;
 
-public class AttachmentService(ApplicationDbContext dbContext, IOptions<FileStorageSettings> storageOptions) : IAttachmentService
+public class AttachmentService(ApplicationDbContext dbContext, IFileStorage fileStorage) : IAttachmentService
 {
     private const long MaxFileSizeBytes = 10 * 1024 * 1024;
 
@@ -55,10 +54,8 @@ public class AttachmentService(ApplicationDbContext dbContext, IOptions<FileStor
             return Result<AttachmentDto>.Failure("You are not authorized to attach files to this record.");
         }
 
-        var root = ResolveRootPath();
-        Directory.CreateDirectory(root);
         var storedFileName = $"{Guid.NewGuid()}{Path.GetExtension(request.FileName)}";
-        await File.WriteAllBytesAsync(Path.Combine(root, storedFileName), request.Content, cancellationToken);
+        await fileStorage.SaveAsync(storedFileName, request.Content, request.ContentType, cancellationToken);
 
         var attachment = new Attachment
         {
@@ -129,13 +126,12 @@ public class AttachmentService(ApplicationDbContext dbContext, IOptions<FileStor
             return Result<AttachmentContentDto>.Failure("You are not authorized to view this attachment.");
         }
 
-        var filePath = Path.Combine(ResolveRootPath(), attachment.StoredFileName);
-        if (!File.Exists(filePath))
+        var content = await fileStorage.ReadAsync(attachment.StoredFileName, cancellationToken);
+        if (content is null)
         {
-            return Result<AttachmentContentDto>.Failure("The file could not be found on disk.");
+            return Result<AttachmentContentDto>.Failure("The file could not be found in storage.");
         }
 
-        var content = await File.ReadAllBytesAsync(filePath, cancellationToken);
         return Result<AttachmentContentDto>.Success(new AttachmentContentDto(attachment.FileName, attachment.ContentType, content));
     }
 
@@ -210,11 +206,6 @@ public class AttachmentService(ApplicationDbContext dbContext, IOptions<FileStor
                 return null;
         }
     }
-
-    private string ResolveRootPath() =>
-        string.IsNullOrWhiteSpace(storageOptions.Value.UploadsRootPath)
-            ? Path.Combine(AppContext.BaseDirectory, "App_Data", "uploads")
-            : storageOptions.Value.UploadsRootPath;
 
     private static AttachmentDto ToDto(Attachment attachment, string uploadedByName) => new(
         attachment.Id,

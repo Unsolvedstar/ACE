@@ -15,6 +15,12 @@ public class Board
     public Guid? SiteId { get; set; }
     public Site? Site { get; set; }
 
+    public Guid? SpaceId { get; set; }
+    public Space? Space { get; set; }
+
+    public Guid? FolderId { get; set; }
+    public Folder? Folder { get; set; }
+
     public bool IsArchived { get; set; }
     public BoardPriority Priority { get; set; } = BoardPriority.Normal;
     public BoardStatus Status { get; set; } = BoardStatus.NotStarted;

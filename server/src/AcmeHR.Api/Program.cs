@@ -3,6 +3,7 @@ using AcmeHR.Api.Common;
 using AcmeHR.Api.HealthChecks;
 using AcmeHR.Api.Hubs;
 using AcmeHR.Application.Auth;
+using AcmeHR.Application.Workflows;
 using AcmeHR.Infrastructure;
 using AcmeHR.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -30,6 +31,10 @@ builder.Services.AddControllers(options => options.Filters.Add<ValidationFilter>
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequest>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddSignalR();
+
+// Registered here rather than in AddInfrastructure() because it depends on WorkflowHub, which
+// lives in this project - Infrastructure can't reference it without an inverted dependency.
+builder.Services.AddScoped<IWorkflowRunNotifier, WorkflowRunNotifier>();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
@@ -118,6 +123,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHub<BoardHub>("/hubs/board").RequireCors("Frontend");
+app.MapHub<WorkflowHub>("/hubs/workflow").RequireCors("Frontend");
 
 app.MapHealthChecks("/healthz", new HealthCheckOptions
 {

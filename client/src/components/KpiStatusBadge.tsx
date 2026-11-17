@@ -2,9 +2,9 @@ import { KpiAppraisalStatus, KpiAppraisalStatusLabels } from "../types/kpi";
 
 // Collabrio chip tokens: small pill, alpha-tinted background + matching border/text.
 const toneByStatus: Record<KpiAppraisalStatus, { bg: string; text: string; dot: string }> = {
-  [KpiAppraisalStatus.InProgress]: { bg: "bg-white/10", text: "text-white/70", dot: "bg-white/40" },
-  [KpiAppraisalStatus.PendingBlastingEngineerSignOff]: { bg: "bg-[#f5a83c]/15", text: "text-[#f5a83c]", dot: "bg-[#f5a83c]" },
-  [KpiAppraisalStatus.Finalized]: { bg: "bg-[#1ecb8f]/15", text: "text-[#1ecb8f]", dot: "bg-[#1ecb8f]" },
+  [KpiAppraisalStatus.InProgress]: { bg: "bg-slate-100", text: "text-slate-600", dot: "bg-slate-300" },
+  [KpiAppraisalStatus.PendingBlastingEngineerSignOff]: { bg: "bg-amber-50", text: "text-amber-600", dot: "bg-amber-500" },
+  [KpiAppraisalStatus.Finalized]: { bg: "bg-emerald-50", text: "text-emerald-600", dot: "bg-emerald-500" },
 };
 
 export function KpiStatusBadge({ status }: { status: KpiAppraisalStatus }) {

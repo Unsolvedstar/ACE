@@ -1,7 +1,7 @@
 export type BadgeTone = "amber" | "emerald" | "red" | "slate";
 
 const toneClasses: Record<BadgeTone, string> = {
-  amber: "bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-300/60",
+  amber: "bg-gold-500/10 text-gold-700 ring-1 ring-inset ring-gold-500/30",
   emerald: "bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-300/60",
   red: "bg-red-50 text-red-800 ring-1 ring-inset ring-red-300/60",
   slate: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-300/60",

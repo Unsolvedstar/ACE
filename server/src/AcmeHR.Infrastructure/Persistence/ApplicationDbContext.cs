@@ -29,6 +29,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<Acknowledgment> Acknowledgments => Set<Acknowledgment>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Space> Spaces => Set<Space>();
+    public DbSet<SpaceMember> SpaceMembers => Set<SpaceMember>();
+    public DbSet<Folder> Folders => Set<Folder>();
     public DbSet<Board> Boards => Set<Board>();
     public DbSet<BoardMember> BoardMembers => Set<BoardMember>();
     public DbSet<BoardTask> BoardTasks => Set<BoardTask>();
@@ -41,6 +44,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<AgentMessage> AgentMessages => Set<AgentMessage>();
     public DbSet<AgentActionAudit> AgentActionAudits => Set<AgentActionAudit>();
     public DbSet<AgentBoardSettings> AgentBoardSettings => Set<AgentBoardSettings>();
+    public DbSet<Workflow> Workflows => Set<Workflow>();
+    public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
+    public DbSet<WorkflowRunStep> WorkflowRunSteps => Set<WorkflowRunStep>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

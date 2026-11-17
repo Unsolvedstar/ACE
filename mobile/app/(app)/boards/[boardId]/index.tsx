@@ -6,6 +6,7 @@ import { getBoardTasks } from '../../../../src/api/tasks';
 import { extractErrorMessage } from '../../../../src/api/client';
 import { useBoardLiveUpdates } from '../../../../src/realtime/useBoardLiveUpdates';
 import { BoardTaskStatus, BoardTaskStatusLabels, type BoardTask } from '../../../../src/types/boards';
+import { colors } from '../../../../src/theme/colors';
 
 const STATUS_ORDER: BoardTaskStatus[] = [BoardTaskStatus.Todo, BoardTaskStatus.InProgress, BoardTaskStatus.Done];
 
@@ -78,23 +79,23 @@ export default function BoardDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6f8' },
+  container: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  error: { color: '#c0392b' },
+  error: { color: colors.error },
   content: { padding: 16, paddingBottom: 100 },
   title: { fontSize: 22, fontWeight: '700' },
   description: { color: '#666', marginTop: 4 },
   section: { marginTop: 20 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginBottom: 8, textTransform: 'uppercase' },
   emptyText: { color: '#999', fontStyle: 'italic' },
-  taskCard: { backgroundColor: '#fff', padding: 14, borderRadius: 8, marginBottom: 8 },
+  taskCard: { backgroundColor: colors.card, padding: 14, borderRadius: 8, marginBottom: 8 },
   taskTitle: { fontSize: 15, fontWeight: '600' },
   taskMeta: { fontSize: 12, color: '#888', marginTop: 4 },
   fab: {
     position: 'absolute',
     right: 20,
     bottom: 28,
-    backgroundColor: '#0a3d62',
+    backgroundColor: colors.ink900,
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 28,

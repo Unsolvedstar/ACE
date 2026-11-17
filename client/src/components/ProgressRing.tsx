@@ -13,7 +13,7 @@ export function ProgressRing({
   size = 140,
   strokeWidth = 14,
   trackClassName = "stroke-slate-100",
-  progressClassName = "stroke-yellow-500",
+  progressClassName = "stroke-gold-500",
   label,
   sublabel,
 }: ProgressRingProps) {

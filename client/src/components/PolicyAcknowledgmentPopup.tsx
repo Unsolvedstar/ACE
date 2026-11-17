@@ -107,9 +107,9 @@ export function PolicyAcknowledgmentPopup() {
   if (!visible || !current) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink-950/60 px-4">
       <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-2xl">
-        <p className="text-xs font-semibold uppercase tracking-wide text-yellow-600">New policy</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gold-600">New policy</p>
         <h3 className="mt-1 text-lg font-semibold text-slate-900">{current.title}</h3>
         <p className="mt-1 text-xs text-slate-500">
           Published by {current.publishedByName} — {formatDateTime(current.publishedAtUtc)}
@@ -142,7 +142,7 @@ export function PolicyAcknowledgmentPopup() {
             type="button"
             onClick={handleAcknowledge}
             disabled={isActing}
-            className="rounded-md bg-yellow-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-50"
+            className="rounded-md bg-gold-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-gold-500 disabled:opacity-50"
           >
             {isActing ? "Acknowledging..." : "Acknowledge"}
           </button>

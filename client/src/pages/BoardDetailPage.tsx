@@ -217,7 +217,7 @@ export function BoardDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-6">
-        <p className="text-sm text-white/40">Loading board...</p>
+        <p className="text-sm text-slate-500">Loading board...</p>
       </div>
     );
   }
@@ -225,8 +225,8 @@ export function BoardDetailPage() {
   if (!board) {
     return (
       <div className="flex flex-col gap-4">
-        <p className="text-sm text-[#e69c9c]">{error ?? "Board not found."}</p>
-        <Link to="/kpi/boards" className="text-sm text-[#93d75f] hover:underline">
+        <p className="text-sm text-red-600">{error ?? "Board not found."}</p>
+        <Link to="/kpi/boards" className="text-sm text-gold-700 hover:underline">
           Back to boards
         </Link>
       </div>
@@ -235,45 +235,45 @@ export function BoardDetailPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link to="/kpi/boards" className="flex w-fit items-center gap-1.5 text-xs text-white/40 hover:text-white/70">
+      <Link to="/kpi/boards" className="flex w-fit items-center gap-1.5 text-xs text-slate-500 hover:text-slate-600">
         <ArrowLeft className="h-3.5 w-3.5" />
         Boards
       </Link>
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">{board.name}</h2>
-          {board.description && <p className="mt-1 max-w-xl text-sm text-white/50">{board.description}</p>}
+          <h2 className="text-lg font-semibold text-slate-900">{board.name}</h2>
+          {board.description && <p className="mt-1 max-w-xl text-sm text-slate-500">{board.description}</p>}
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+            <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
               {BoardStatusLabels[board.status]}
             </span>
             {board.priority !== BoardPriority.Normal && (
-              <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+              <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                 {BoardPriorityLabels[board.priority]}
               </span>
             )}
             {board.deadline && (
-              <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+              <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
                 Due {board.deadline}
               </span>
             )}
-            <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+            <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
               {board.completionPercentage}% complete
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex -space-x-2">
             {board.members.map((member) => (
-              <PersonAvatar key={member.employeeId} name={member.employeeName} size={28} className="border-[#202325]" />
+              <PersonAvatar key={member.employeeId} name={member.employeeName} size={28} className="border-slate-50" />
             ))}
           </div>
           {isMember && (
             <button
               type="button"
               onClick={() => setIsAgentPanelOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-[#6fbe44]/40 px-3 py-1.5 text-xs font-medium text-[#93d75f] transition-colors hover:bg-[#6fbe44]/10"
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-gold-500/40 px-3 py-1.5 text-xs font-medium text-gold-700 transition-colors hover:bg-gold-500/10"
             >
               <Sparkles className="h-3.5 w-3.5" />
               AI Assistant
@@ -283,7 +283,7 @@ export function BoardDetailPage() {
             <button
               type="button"
               onClick={openSettings}
-              className="flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/5"
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
             >
               <Settings2 className="h-3.5 w-3.5" />
               Board settings
@@ -293,7 +293,7 @@ export function BoardDetailPage() {
             <button
               type="button"
               onClick={() => setIsAddMemberOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/5"
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50"
             >
               <UserPlus className="h-3.5 w-3.5" />
               Add member
@@ -303,7 +303,7 @@ export function BoardDetailPage() {
             <button
               type="button"
               onClick={handleDownloadSummary}
-              className="flex items-center gap-1.5 rounded-lg border border-[#6fbe44]/40 px-3 py-1.5 text-xs font-medium text-[#93d75f] transition-colors hover:bg-[#6fbe44]/10"
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-gold-500/40 px-3 py-1.5 text-xs font-medium text-gold-700 transition-colors hover:bg-gold-500/10"
             >
               <FileDown className="h-3.5 w-3.5" />
               Weekly summary
@@ -312,7 +312,7 @@ export function BoardDetailPage() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-[#e69c9c]">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="flex gap-3 overflow-x-auto pb-2">
         {COLUMNS.map((column) => {
@@ -321,7 +321,7 @@ export function BoardDetailPage() {
             <div
               key={column.status}
               style={{ borderColor: `${column.color}4d` }}
-              className="flex h-fit min-h-[200px] w-[300px] shrink-0 flex-col gap-2 rounded-xl border-2 bg-[#3a3d40]/90 p-3 backdrop-blur-md transition-all"
+              className="flex h-fit min-h-[200px] w-[300px] shrink-0 flex-col gap-2 rounded-xl border-2 bg-white p-3 backdrop-blur-md transition-all"
             >
               <div
                 className="flex items-center justify-between gap-2 border-b pb-2"
@@ -332,7 +332,7 @@ export function BoardDetailPage() {
                     {BoardTaskStatusLabels[column.status]}
                   </span>
                   <span
-                    className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-[#131415]"
+                    className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-slate-900"
                     style={{ backgroundColor: column.color }}
                   >
                     {columnTasks.length}
@@ -342,7 +342,7 @@ export function BoardDetailPage() {
                   type="button"
                   onClick={() => setTaskDialog({})}
                   aria-label="Add task"
-                  className="rounded-md p-1 transition-colors hover:bg-white/10"
+                  className="rounded-md p-1 transition-colors hover:bg-slate-100"
                   style={{ color: column.color }}
                 >
                   <Plus className="h-4 w-4" />
@@ -351,7 +351,7 @@ export function BoardDetailPage() {
 
               <div className="flex flex-col gap-2">
                 {columnTasks.length === 0 ? (
-                  <p className="px-1 py-3 text-center text-xs text-white/30">No tasks</p>
+                  <p className="px-1 py-3 text-center text-xs text-slate-400">No tasks</p>
                 ) : (
                   columnTasks.map((task) => (
                     <TaskCard
@@ -409,16 +409,16 @@ export function BoardDetailPage() {
       )}
 
       {isSettingsOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#3a3d40] p-6 shadow-2xl font-['Inter']">
-            <h3 className="mb-4 text-sm font-semibold text-white">Board settings</h3>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/60 px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl font-['Inter']">
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">Board settings</h3>
             <div className="flex flex-col gap-3">
-              <label className="flex flex-col gap-1 text-sm text-white/70">
+              <label className="flex flex-col gap-1 text-sm text-slate-600">
                 Status
                 <select
                   value={settingsStatus}
                   onChange={(e) => setSettingsStatus(Number(e.target.value) as BoardStatus)}
-                  className="rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white focus:border-[#6fbe44] focus:outline-none"
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-gold-500 focus:outline-none"
                 >
                   {Object.entries(BoardStatusLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -427,12 +427,12 @@ export function BoardDetailPage() {
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-sm text-white/70">
+              <label className="flex flex-col gap-1 text-sm text-slate-600">
                 Priority
                 <select
                   value={settingsPriority}
                   onChange={(e) => setSettingsPriority(Number(e.target.value) as BoardPriority)}
-                  className="rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white focus:border-[#6fbe44] focus:outline-none"
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-gold-500 focus:outline-none"
                 >
                   {Object.entries(BoardPriorityLabels).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -441,26 +441,26 @@ export function BoardDetailPage() {
                   ))}
                 </select>
               </label>
-              <label className="flex flex-col gap-1 text-sm text-white/70">
+              <label className="flex flex-col gap-1 text-sm text-slate-600">
                 Deadline
                 <input
                   type="date"
                   value={settingsDeadline}
                   onChange={(e) => setSettingsDeadline(e.target.value)}
-                  className="rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white focus:border-[#6fbe44] focus:outline-none"
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 focus:border-gold-500 focus:outline-none"
                 />
               </label>
-              <label className="flex items-start gap-2 rounded-lg border border-white/10 bg-[#202325] px-3 py-2.5 text-sm text-white/70">
+              <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={settingsAutoExecute}
                   onChange={(e) => setSettingsAutoExecute(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[#6fbe44]"
+                  className="mt-0.5 h-4 w-4 accent-gold-600"
                 />
                 <span>
-                  <span className="font-medium text-white">Let the AI assistant act automatically</span>
+                  <span className="font-medium text-slate-900">Let the AI assistant act automatically</span>
                   <br />
-                  <span className="text-xs text-white/40">
+                  <span className="text-xs text-slate-500">
                     {settingsAutoExecute
                       ? "The assistant executes task actions immediately."
                       : "The assistant proposes actions for a manager to approve first (default)."}
@@ -468,20 +468,20 @@ export function BoardDetailPage() {
                 </span>
               </label>
             </div>
-            {settingsError && <p className="mt-2 text-sm text-[#e69c9c]">{settingsError}</p>}
+            {settingsError && <p className="mt-2 text-sm text-red-600">{settingsError}</p>}
             <div className="mt-4 flex items-center gap-2">
               <button
                 type="button"
                 disabled={isSavingSettings}
                 onClick={handleSaveSettings}
-                className="rounded-lg bg-[#6fbe44] px-4 py-2 text-sm font-semibold text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+                className="rounded-lg bg-gold-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
               >
                 {isSavingSettings ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(false)}
-                className="text-xs text-white/40 hover:text-white/70 hover:underline"
+                className="text-xs text-slate-500 hover:text-slate-600 hover:underline"
               >
                 Cancel
               </button>
@@ -491,21 +491,21 @@ export function BoardDetailPage() {
       )}
 
       {isAddMemberOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#3a3d40] p-6 shadow-2xl font-['Inter']">
-            <h3 className="mb-3 text-sm font-semibold text-white">Add members</h3>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/60 px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl font-['Inter']">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Add members</h3>
             <BoardMemberPicker
               selectedIds={newMemberIds}
               onChange={setNewMemberIds}
               excludeEmployeeIds={board.members.map((m) => m.employeeId)}
             />
-            {addMemberError && <p className="mt-2 text-sm text-[#e69c9c]">{addMemberError}</p>}
+            {addMemberError && <p className="mt-2 text-sm text-red-600">{addMemberError}</p>}
             <div className="mt-4 flex items-center gap-2">
               <button
                 type="button"
                 disabled={isAddingMembers || newMemberIds.length === 0}
                 onClick={handleAddMembers}
-                className="rounded-lg bg-[#6fbe44] px-4 py-2 text-sm font-semibold text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+                className="rounded-lg bg-gold-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
               >
                 {isAddingMembers ? "Adding..." : "Add selected"}
               </button>
@@ -516,7 +516,7 @@ export function BoardDetailPage() {
                   setNewMemberIds([]);
                   setAddMemberError(null);
                 }}
-                className="text-xs text-white/40 hover:text-white/70 hover:underline"
+                className="text-xs text-slate-500 hover:text-slate-600 hover:underline"
               >
                 Cancel
               </button>

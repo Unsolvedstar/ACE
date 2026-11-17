@@ -1,5 +1,11 @@
 import { apiClient } from "./client";
-import type { AddBoardMemberRequest, BoardDto, CreateBoardRequest, UpdateBoardRequest } from "../types/board";
+import type {
+  AddBoardMemberRequest,
+  BoardDto,
+  CreateBoardRequest,
+  MoveBoardRequest,
+  UpdateBoardRequest,
+} from "../types/board";
 
 export async function getMyBoards(): Promise<BoardDto[]> {
   const { data } = await apiClient.get<BoardDto[]>("/boards/mine");
@@ -28,5 +34,10 @@ export async function addBoardMember(id: string, request: AddBoardMemberRequest)
 
 export async function removeBoardMember(id: string, employeeId: string): Promise<BoardDto> {
   const { data } = await apiClient.delete<BoardDto>(`/boards/${id}/members/${employeeId}`);
+  return data;
+}
+
+export async function moveBoard(id: string, request: MoveBoardRequest): Promise<BoardDto> {
+  const { data } = await apiClient.patch<BoardDto>(`/boards/${id}/move`, request);
   return data;
 }

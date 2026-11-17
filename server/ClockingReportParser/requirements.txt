@@ -1,7 +1,0 @@
-pdfplumber
-pikepdf
-pandas
-openpyxl
-fastapi
-uvicorn
-python-multipart

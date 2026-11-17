@@ -20,15 +20,6 @@ databases:
     user: acme_app
 
 services:
-  # Private service (no public URL, no auth of its own) — only reachable from
-  # acme-hr-api over Render's internal network at http://<name>:8010.
-  - type: pserv
-    name: acme-hr-clocking-parser
-    runtime: docker
-    plan: free
-    dockerfilePath: ./server/ClockingReportParser/Dockerfile
-    dockerContext: ./server/ClockingReportParser
-
   - type: web
     name: acme-hr-api
     runtime: docker
@@ -56,8 +47,21 @@ services:
       # confirm the actual URL after first deploy and update this if it differs.
       - key: Cors__AllowedOrigins__0
         value: https://acme-hr-client.onrender.com
-      - key: ClockingParser__BaseUrl
-        value: http://acme-hr-clocking-parser:8010
+      # Attachments (PPE certs, medical docs, policy PDFs, ...) are stored in a
+      # Cloudflare R2 bucket instead of the container's own disk, which is wiped on
+      # every redeploy/restart. Create the bucket + an R2 API token in the Cloudflare
+      # dashboard, then fill in the three secret values below in the Render dashboard
+      # (Environment tab) — they're marked `sync: false` so they're never committed here.
+      - key: Storage__Provider
+        value: S3
+      - key: Storage__S3ServiceUrl
+        sync: false
+      - key: Storage__S3BucketName
+        sync: false
+      - key: Storage__S3AccessKeyId
+        sync: false
+      - key: Storage__S3SecretAccessKey
+        sync: false
 
   - type: web
     name: acme-hr-client

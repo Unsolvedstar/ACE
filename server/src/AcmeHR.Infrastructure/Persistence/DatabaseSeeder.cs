@@ -59,7 +59,7 @@ public static class DatabaseSeeder
             site = new Site
             {
                 Id = Guid.NewGuid(),
-                Name = "Kusasalethu Mine",
+                Name = "Head Office",
                 Location = "South Africa"
             };
             dbContext.Sites.Add(site);

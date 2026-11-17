@@ -75,7 +75,7 @@ export function AcknowledgmentPanel({ entityType, entityId, compact = false }: A
             type="button"
             disabled={isAcknowledging}
             onClick={handleAcknowledge}
-            className="shrink-0 rounded-md border border-yellow-600 px-2.5 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-50 disabled:opacity-50"
+            className="shrink-0 rounded-md border border-gold-600 px-2.5 py-1 text-xs font-medium text-gold-700 hover:bg-gold-500/10 disabled:opacity-50"
           >
             {isAcknowledging ? "Acknowledging..." : "Acknowledge"}
           </button>

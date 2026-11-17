@@ -1,6 +1,6 @@
 import {
   LayoutDashboard,
-  Clock,
+  AlertTriangle,
   CalendarClock,
   CalendarOff,
   FileText,
@@ -13,6 +13,8 @@ import {
   Award,
   BarChart3,
   Settings,
+  FolderTree,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { EmployeeRole } from "../types/auth";
@@ -23,31 +25,26 @@ export interface NavItem {
   icon: LucideIcon;
   badge?: string;
   category?: string;
-  /** Omit to show to every role — set to restrict visibility (e.g. Timesheet). */
+  /** Omit to show to every role — set to restrict visibility to specific roles. */
   roles?: EmployeeRole[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  {
-    path: "/timesheet",
-    label: "Timesheet",
-    icon: Clock,
-    category: "Time & Leave",
-    // Only the clocking report parser lives here now — HR only.
-    roles: [EmployeeRole.HR],
-  },
   { path: "/work-shift", label: "Work Shift", icon: CalendarClock, badge: "NEW", category: "Time & Leave" },
   { path: "/leave", label: "Leave Management", icon: CalendarOff, category: "Time & Leave" },
+  { path: "/incidents", label: "Incidents & Near Miss", icon: AlertTriangle, category: "Safety & Compliance" },
   { path: "/ppe", label: "PPE Management", icon: HardHat, category: "Safety & Compliance" },
   { path: "/legal-appointments", label: "Legal Appointments", icon: Scale, category: "Safety & Compliance" },
   { path: "/medical", label: "Medical", icon: HeartPulse, category: "People & Development" },
   { path: "/training", label: "Training & Certifications", icon: GraduationCap, category: "People & Development" },
   { path: "/kpi", label: "KPI Appraisals", icon: TrendingUp, category: "People & Development" },
+  { path: "/workspace", label: "Workspace", icon: FolderTree, badge: "NEW", category: "People & Development" },
   { path: "/certificates", label: "My Certificates", icon: Award, category: "People & Development" },
   { path: "/policies", label: "Policies & Documents", icon: FileText, category: "Admin & Info" },
   { path: "/announcements", label: "Announcements", icon: Megaphone, category: "Admin & Info" },
   { path: "/reports", label: "Reports & Analytics", icon: BarChart3, category: "Admin & Info" },
+  { path: "/workflows", label: "Workflow Automation", icon: Workflow, badge: "NEW", category: "Admin & Info" },
   { path: "/settings", label: "Settings", icon: Settings, category: "Admin & Info" },
 ];
 

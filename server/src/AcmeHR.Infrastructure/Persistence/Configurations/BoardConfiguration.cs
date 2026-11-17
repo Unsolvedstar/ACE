@@ -29,6 +29,18 @@ public class BoardConfiguration : IEntityTypeConfiguration<Board>
             .HasForeignKey(b => b.SiteId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.HasOne(b => b.Space)
+            .WithMany(s => s.Boards)
+            .HasForeignKey(b => b.SpaceId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(b => b.Folder)
+            .WithMany(f => f.Boards)
+            .HasForeignKey(b => b.FolderId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(b => b.OwnerEmployeeId);
+        builder.HasIndex(b => b.SpaceId);
+        builder.HasIndex(b => b.FolderId);
     }
 }

@@ -56,7 +56,7 @@ function StatPill({ label, value, icon: Icon, color }: StatPillProps) {
       <span className="text-sm font-semibold" style={{ color }}>
         {animated ?? "—"}
       </span>
-      <span className="text-xs text-white/50">{label}</span>
+      <span className="text-xs text-slate-500">{label}</span>
     </div>
   );
 }
@@ -174,8 +174,8 @@ export function KpiAppraisalsPage() {
   }
 
   const inputClasses =
-    "rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#6fbe44] focus:outline-none focus:ring-2 focus:ring-[#6fbe44]/20";
-  const labelClasses = "flex flex-col gap-1 text-sm text-white/70";
+    "rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15";
+  const labelClasses = "flex flex-col gap-1 text-sm text-slate-600";
 
   const createSteps: WizardStep[] = [
     {
@@ -307,7 +307,7 @@ export function KpiAppraisalsPage() {
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-[#6fbe44] px-4 py-2 text-sm font-semibold text-[#131415] transition-colors hover:bg-[#93d75f]"
+            className="flex items-center gap-1.5 rounded-lg bg-gold-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-500"
           >
             <Plus className="h-4 w-4" />
             New appraisal
@@ -316,11 +316,11 @@ export function KpiAppraisalsPage() {
       </div>
 
       {isCreateOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#3a3d40] p-6 shadow-2xl font-['Inter']">
-            <h3 className="mb-4 text-sm font-semibold text-white">Create KPI appraisal</h3>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/60 px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl font-['Inter']">
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">Create KPI appraisal</h3>
             {templates.length === 0 ? (
-              <p className="text-sm text-white/50">No KPI templates available yet.</p>
+              <p className="text-sm text-slate-500">No KPI templates available yet.</p>
             ) : (
               <StepForm
                 theme="dark"
@@ -335,7 +335,7 @@ export function KpiAppraisalsPage() {
             <button
               type="button"
               onClick={() => setIsCreateOpen(false)}
-              className="mt-3 text-xs text-white/40 hover:text-white/70 hover:underline"
+              className="mt-3 text-xs text-slate-500 hover:text-slate-600 hover:underline"
             >
               Cancel
             </button>
@@ -345,7 +345,7 @@ export function KpiAppraisalsPage() {
 
       {pendingSignOff.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold text-white">Pending your sign-off</h3>
+          <h3 className="text-sm font-semibold text-slate-900">Pending your sign-off</h3>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {pendingSignOff.map((appraisal) => (
               <KpiAppraisalSummaryCard
@@ -376,14 +376,14 @@ export function KpiAppraisalsPage() {
 
       {isLineManager && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold text-white">My team's appraisals</h3>
+          <h3 className="text-sm font-semibold text-slate-900">My team's appraisals</h3>
           {isLoadingLists ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               <KpiSkeletonCard />
               <KpiSkeletonCard />
             </div>
           ) : managedAppraisals.length === 0 ? (
-            <p className="rounded-xl border border-white/10 bg-[#3a3d40] px-6 py-8 text-center text-sm text-white/40">
+            <p className="rounded-xl border border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
               No appraisals for your team yet.
             </p>
           ) : (
@@ -398,7 +398,7 @@ export function KpiAppraisalsPage() {
                       type="button"
                       disabled={isLoadingDetail}
                       onClick={() => handleScoreClick(appraisal.id)}
-                      className="rounded-lg bg-[#6fbe44] px-3 py-1.5 text-xs font-semibold text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+                      className="rounded-lg bg-gold-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
                     >
                       Score
                     </button>
@@ -412,12 +412,12 @@ export function KpiAppraisalsPage() {
 
       {isHR && (
         <section className="flex flex-col gap-3">
-          <h3 className="text-sm font-semibold text-white">All appraisals</h3>
-          <div className="overflow-hidden rounded-xl border border-white/10">
+          <h3 className="text-sm font-semibold text-slate-900">All appraisals</h3>
+          <div className="overflow-hidden rounded-xl border border-slate-200">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-xs">
                 <thead>
-                  <tr className="bg-[#3f7429] text-white">
+                  <tr className="bg-slate-50 text-slate-900">
                     <th className="px-4 py-3 font-semibold">Employee</th>
                     <th className="px-4 py-3 font-semibold">Designation / Period</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
@@ -425,7 +425,7 @@ export function KpiAppraisalsPage() {
                     <th className="px-4 py-3 font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-[#3a3d40]">
+                <tbody className="bg-white">
                   {isLoadingLists ? (
                     <tr>
                       <td colSpan={5}>
@@ -436,26 +436,26 @@ export function KpiAppraisalsPage() {
                     </tr>
                   ) : allAppraisals.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-white/40">
+                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                         No appraisals created yet.
                       </td>
                     </tr>
                   ) : (
                     allAppraisals.map((appraisal) => (
-                      <tr key={appraisal.id} className="transition-colors hover:bg-[#454850]">
+                      <tr key={appraisal.id} className="transition-colors hover:bg-slate-50">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <KpiAvatar name={appraisal.employeeName} size={28} />
-                            <span className="font-medium text-white">{appraisal.employeeName}</span>
+                            <span className="font-medium text-slate-900">{appraisal.employeeName}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-white/60">
+                        <td className="px-4 py-3 text-slate-600">
                           {appraisal.designation} — {appraisal.periodLabel}
                         </td>
                         <td className="px-4 py-3">
                           <KpiStatusBadge status={appraisal.status} />
                         </td>
-                        <td className="px-4 py-3 font-semibold text-white">
+                        <td className="px-4 py-3 font-semibold text-slate-900">
                           {appraisal.overallScorePercent === null ? "—" : `${appraisal.overallScorePercent}%`}
                         </td>
                         <td className="px-4 py-3">
@@ -463,7 +463,7 @@ export function KpiAppraisalsPage() {
                             <button
                               type="button"
                               onClick={() => handleTableDownload(appraisal)}
-                              className="rounded-lg border border-[#6fbe44]/40 px-2.5 py-1 text-[11px] font-medium text-[#93d75f] transition-colors hover:bg-[#6fbe44]/10"
+                              className="rounded-lg border border-gold-500/40 px-2.5 py-1 text-[11px] font-medium text-gold-700 transition-colors hover:bg-gold-500/10"
                             >
                               PDF
                             </button>
@@ -471,7 +471,7 @@ export function KpiAppraisalsPage() {
                               type="button"
                               disabled={isLoadingDetail}
                               onClick={() => handleScoreClick(appraisal.id)}
-                              className="rounded-lg border border-white/15 px-2.5 py-1 text-[11px] font-medium text-white/70 transition-colors hover:bg-white/5 disabled:opacity-50"
+                              className="rounded-lg border border-slate-300 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
                             >
                               Score
                             </button>
@@ -488,13 +488,13 @@ export function KpiAppraisalsPage() {
       )}
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-white">My KPI appraisals</h3>
+        <h3 className="text-sm font-semibold text-slate-900">My KPI appraisals</h3>
         {isLoadingLists ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <KpiSkeletonCard />
           </div>
         ) : myAppraisals.length === 0 ? (
-          <p className="rounded-xl border border-white/10 bg-[#3a3d40] px-6 py-8 text-center text-sm text-white/40">
+          <p className="rounded-xl border border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
             No KPI appraisals yet.
           </p>
         ) : (
@@ -506,7 +506,7 @@ export function KpiAppraisalsPage() {
         )}
       </section>
 
-      {error && !isCreateOpen && <p className="text-sm text-[#e69c9c]">{error}</p>}
+      {error && !isCreateOpen && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

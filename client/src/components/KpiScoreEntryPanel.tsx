@@ -16,9 +16,9 @@ interface FlagEntry {
 }
 
 const scoreChipColor: Record<number, string> = {
-  1: "bg-[#c65a5a] text-white border-[#c65a5a]",
-  2: "bg-[#f5a83c] text-[#131415] border-[#f5a83c]",
-  3: "bg-[#1ecb8f] text-[#131415] border-[#1ecb8f]",
+  1: "bg-red-600 text-white border-red-600",
+  2: "bg-amber-500 text-white border-amber-500",
+  3: "bg-emerald-500 text-white border-emerald-500",
 };
 
 function checkpointField(item: KpiAppraisalItemDto, checkpoint: number): { score: number | null; comment: string | null } {
@@ -131,30 +131,30 @@ export function KpiScoreEntryPanel({ appraisal, onSaved, onCancel }: KpiScoreEnt
   }));
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#3a3d40]/90 p-6 shadow-2xl backdrop-blur-md font-['Inter']">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl backdrop-blur-md font-['Inter']">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-white">
+          <h3 className="text-sm font-semibold text-slate-900">
             Score {appraisal.employeeName} — {appraisal.periodLabel}
           </h3>
-          <p className="text-xs text-white/50">{appraisal.designation}</p>
+          <p className="text-xs text-slate-500">{appraisal.designation}</p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex overflow-hidden rounded-lg border border-white/10">
+          <div className="flex overflow-hidden rounded-lg border border-slate-200">
             {[1, 2, 3, 4].map((cp) => (
               <button
                 key={cp}
                 type="button"
                 onClick={() => handleCheckpointChange(cp)}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  cp === checkpoint ? "bg-[#6fbe44] text-[#131415]" : "bg-transparent text-white/60 hover:bg-white/5"
+                  cp === checkpoint ? "bg-gold-600 text-white" : "bg-transparent text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 Review {cp}
               </button>
             ))}
           </div>
-          {date && <span className="text-xs text-white/40">({formatDate(date)})</span>}
+          {date && <span className="text-xs text-slate-500">({formatDate(date)})</span>}
         </div>
       </div>
 
@@ -168,7 +168,7 @@ export function KpiScoreEntryPanel({ appraisal, onSaved, onCancel }: KpiScoreEnt
         error={error}
       />
 
-      <button type="button" onClick={onCancel} className="mt-3 text-xs text-white/40 hover:text-white/70 hover:underline">
+      <button type="button" onClick={onCancel} className="mt-3 text-xs text-slate-500 hover:text-slate-600 hover:underline">
         Close
       </button>
     </div>
@@ -190,7 +190,7 @@ function renderItems(
       previousSubGroup = item.subGroupLabel;
       if (item.subGroupLabel) {
         rows.push(
-          <p key={`${item.id}-group`} className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-white/40">
+          <p key={`${item.id}-group`} className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
             {item.subGroupLabel}
           </p>,
         );
@@ -203,9 +203,9 @@ function renderItems(
     rows.push(
       <div
         key={item.id}
-        className="rounded-lg border border-white/5 bg-[#2d2f31] p-3 transition-colors hover:border-[#6fbe44]/30"
+        className="rounded-lg border border-slate-100 bg-slate-100 p-3 transition-colors hover:border-gold-500/40"
       >
-        <p className="text-sm text-white/90">{item.description}</p>
+        <p className="text-sm text-slate-800">{item.description}</p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1">
             {[1, 2, 3].map((value) => (
@@ -216,7 +216,7 @@ function renderItems(
                   setScores((prev) => ({ ...prev, [item.id]: { ...scoreEntry, score: scoreEntry.score === value ? null : value } }))
                 }
                 className={`flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold transition-colors ${
-                  scoreEntry.score === value ? scoreChipColor[value] : "border-white/15 bg-white/5 text-white/50 hover:border-[#6fbe44]/40"
+                  scoreEntry.score === value ? scoreChipColor[value] : "border-slate-300 bg-slate-50 text-slate-500 hover:border-gold-500/40"
                 }`}
               >
                 {value}
@@ -228,15 +228,15 @@ function renderItems(
             placeholder="Comment (optional)"
             value={scoreEntry.comment}
             onChange={(e) => setScores((prev) => ({ ...prev, [item.id]: { ...scoreEntry, comment: e.target.value } }))}
-            className="min-w-[180px] flex-1 rounded-lg border border-white/10 bg-[#202325] px-2 py-1 text-xs text-white placeholder:text-white/30 focus:border-[#6fbe44] focus:outline-none"
+            className="min-w-[180px] flex-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-900 placeholder:text-slate-400 focus:border-gold-500 focus:outline-none"
           />
           <button
             type="button"
             onClick={() => setFlags((prev) => ({ ...prev, [item.id]: { ...flagEntry, inPlace: !flagEntry.inPlace } }))}
             className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${
               flagEntry.inPlace
-                ? "border-[#6fbe44] bg-[#6fbe44]/15 text-[#93d75f]"
-                : "border-white/15 bg-white/5 text-white/40 hover:border-white/30"
+                ? "border-gold-600 bg-gold-500/10 text-gold-700"
+                : "border-slate-300 bg-slate-50 text-slate-500 hover:border-slate-400"
             }`}
           >
             In place
@@ -246,8 +246,8 @@ function renderItems(
             onClick={() => setFlags((prev) => ({ ...prev, [item.id]: { ...flagEntry, ability: !flagEntry.ability } }))}
             className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${
               flagEntry.ability
-                ? "border-[#6fbe44] bg-[#6fbe44]/15 text-[#93d75f]"
-                : "border-white/15 bg-white/5 text-white/40 hover:border-white/30"
+                ? "border-gold-600 bg-gold-500/10 text-gold-700"
+                : "border-slate-300 bg-slate-50 text-slate-500 hover:border-slate-400"
             }`}
           >
             Ability

@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using AcmeHR.Application.Agents;
 using Microsoft.Extensions.Options;
 
@@ -33,12 +34,22 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
 
     public async Task<AiChatResponse> GetChatResponseAsync(AiChatRequest request, CancellationToken cancellationToken = default)
     {
-        var messages = new List<OllamaMessage> { new("system", BuildBoardSystemPrompt(request.Board, request.ToolsEnabled)) };
+        // Small local models are heavily biased toward calling *some* tool whenever tools are
+        // present in the request at all, regardless of what the system prompt says — verified
+        // empirically against llama3.2: the same question that gets a correct plain-text answer
+        // with no tools offered gets a spurious/hallucinated tool call as soon as tools are
+        // offered. Only offering tools when the message actually looks like one of the four
+        // supported actions sidesteps that bias entirely instead of trying to prompt around it -
+        // and the system prompt below is built to match, so it never claims action capability
+        // that isn't backed by any real tool definition on this particular call.
+        var offerTools = request.ToolsEnabled && LooksLikeActionRequest(request.UserMessage);
+
+        var messages = new List<OllamaMessage> { new("system", BuildBoardSystemPrompt(request.Board, offerTools)) };
         messages.AddRange(request.History.Select(h => new OllamaMessage(h.Role, h.Content)));
         messages.Add(new OllamaMessage("user", request.UserMessage));
 
         var chatRequest = new OllamaChatRequest(
-            ModelName, messages, Stream: false, Tools: request.ToolsEnabled ? BuildToolDefinitions() : null);
+            ModelName, messages, Stream: false, Tools: offerTools ? BuildToolDefinitions() : null);
 
         try
         {
@@ -142,6 +153,35 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
 
     private string ModelName => string.IsNullOrWhiteSpace(settings.Value.Model) ? DefaultModel : settings.Value.Model;
 
+    // Tuned empirically against llama3.2 rather than derived analytically — see the 13 cases in
+    // OllamaAiProviderTests for exactly what this is meant to catch and let through. Errs toward
+    // under-matching ambiguous phrasing (status/deadline changes need a verb *and* a target
+    // word/phrase) since offering tools to a real question is the failure mode this exists to
+    // eliminate; a real action request that doesn't match can just be rephrased.
+    internal static bool LooksLikeActionRequest(string message)
+    {
+        var m = message.ToLowerInvariant();
+
+        if (Regex.IsMatch(m, @"\bcreate\b|\bassign\b|\breassign\b"))
+        {
+            return true;
+        }
+
+        var hasStatusVerb = Regex.IsMatch(m, @"\bmove\b|\bmark\b|\bclose\b|\bcomplete\b|\bstart\b|\bfinish\b|\bchange\b.*\bstatus\b|\bset\b.*\bstatus\b");
+        var hasStatusWord = Regex.IsMatch(m, @"\bdone\b|\bin progress\b|\btodo\b|\bto do\b|\bcomplete\b");
+        if (hasStatusVerb && hasStatusWord)
+        {
+            return true;
+        }
+
+        if (Regex.IsMatch(m, @"\breschedule\b|\bpostpone\b|\bpush back\b|\bextend the deadline\b"))
+        {
+            return true;
+        }
+
+        return Regex.IsMatch(m, @"\b(change|set|move)\b.*\b(due date|deadline)\b");
+    }
+
     private static bool LooksLikeStrayToolCallJson(string text)
     {
         if (text.Length > 300 || !text.TrimStart().StartsWith('{') || !text.TrimEnd().EndsWith('}'))
@@ -166,7 +206,7 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
     private static string BuildBoardSystemPrompt(AiBoardContext board, bool toolsEnabled)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("You are an AI assistant embedded in a mining company's HR & safety management system, helping with one project board.");
+        sb.AppendLine("You are an AI assistant embedded in an HR & safety management system, helping with one project board.");
         sb.AppendLine($"Board: \"{board.BoardName}\" (id: {board.BoardId})");
         sb.AppendLine();
         sb.AppendLine("Members:");
@@ -183,9 +223,19 @@ public class OllamaAiProvider(HttpClient httpClient, IOptions<AiProviderSettings
         }
         sb.AppendLine();
         sb.AppendLine("Answer using only the data above. Be concise, and reply in plain conversational English — never JSON, never a tool-call-shaped object, never code.");
-        sb.AppendLine(toolsEnabled
-            ? "The only four things you can DO (not just discuss) are: create a task, change a task's status, reassign a task, or change a task's deadline — use the matching tool with the correct id(s) from the lists above, and only when the request is unambiguous (ask a clarifying question in plain text instead of guessing). For every other message — questions, greetings, anything not one of those four actions — just answer directly in plain text. Do not call a tool, and do not describe a tool call in your text, unless the user is clearly asking for one of those four actions."
-            : "You cannot take any actions in this conversation — only answer questions, in plain text.");
+        if (toolsEnabled)
+        {
+            sb.AppendLine("There are exactly four tools available: CreateTask, UpdateTaskStatus, AssignTask, SetDeadline. Never call any other tool name.");
+            sb.AppendLine();
+            sb.AppendLine("Only include parameters the user actually stated. When you call a tool, include every parameter the user explicitly mentioned, and OMIT every parameter they did not mention — never invent a placeholder value like \"unassigned\" or \"none\" for a parameter that wasn't given.");
+            sb.AppendLine("Example: \"Create a task called 'Replace fire extinguisher' due 2026-10-01.\" -> CreateTask with title=\"Replace fire extinguisher\" and dueDate=\"2026-10-01\" (no assigneeEmployeeId - it wasn't mentioned, so it's omitted entirely).");
+            sb.AppendLine();
+            sb.AppendLine("Only call a tool when the request is an unambiguous instance of one of the four actions and you have a real id for every required parameter from the lists above. If anything is ambiguous or a needed id is missing, ask a clarifying question in plain text instead of guessing.");
+        }
+        else
+        {
+            sb.AppendLine("You cannot take any actions in this reply — only answer questions, in plain text.");
+        }
         return sb.ToString();
     }
 

@@ -19,7 +19,7 @@ public class PolicyServiceTests
     private static PolicyService CreateService(ApplicationDbContext dbContext) => new(
         dbContext,
         new NotificationService(dbContext),
-        new AttachmentService(dbContext, Options.Create(new FileStorageSettings())),
+        new AttachmentService(dbContext, new LocalFileStorage(Options.Create(new FileStorageSettings()))),
         new DocumentSigningService());
 
     [Fact]

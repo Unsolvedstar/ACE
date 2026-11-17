@@ -88,7 +88,7 @@ export function SettingsPage() {
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h3 className="mb-4 text-sm font-semibold text-slate-900">My profile</h3>
         {profileError ? (
-          <p className="text-sm text-yellow-600">{profileError}</p>
+          <p className="text-sm text-gold-600">{profileError}</p>
         ) : !profile ? (
           <p className="text-sm text-slate-500">Loading...</p>
         ) : (
@@ -147,7 +147,7 @@ export function SettingsPage() {
           type="button"
           onClick={handleSaveSignature}
           disabled={isSavingSignature}
-          className="mt-3 w-fit rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-50"
+          className="mt-3 w-fit rounded-md bg-gold-600 px-4 py-2 text-sm font-medium text-white hover:bg-gold-500 disabled:opacity-50"
         >
           {isSavingSignature ? "Saving..." : signature?.hasSignature ? "Update signature" : "Save signature"}
         </button>
@@ -163,7 +163,7 @@ export function SettingsPage() {
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-slate-700">
@@ -174,7 +174,7 @@ export function SettingsPage() {
               minLength={8}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-slate-700">
@@ -185,7 +185,7 @@ export function SettingsPage() {
               minLength={8}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
 
@@ -195,7 +195,7 @@ export function SettingsPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-1 w-fit rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-50"
+            className="mt-1 w-fit rounded-md bg-gold-600 px-4 py-2 text-sm font-medium text-white hover:bg-gold-500 disabled:opacity-50"
           >
             {isSubmitting ? "Changing..." : "Change password"}
           </button>

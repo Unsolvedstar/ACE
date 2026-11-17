@@ -1,6 +1,6 @@
-# Digital Mining HR & Safety Management System
+# AcmeHR — Workforce & Safety Management System
 
-Enterprise HR & safety management system for mining sites — role-based web portal (Employee, Line Manager, HR, Safety Officer, Medical, Security, Executive) with a companion mobile app.
+Enterprise HR & safety management system — role-based web portal (Employee, Line Manager, HR, Safety Officer, Medical, Security, Executive) with a companion mobile app.
 
 Reference design: [docs/mockup.jpeg](docs/mockup.jpeg)
 
@@ -14,7 +14,6 @@ Reference design: [docs/mockup.jpeg](docs/mockup.jpeg)
 
 ```
 server/                        ASP.NET Core solution (Api / Application / Domain / Infrastructure)
-server/ClockingReportParser/   Python service the Timesheet page's clocking-report parser calls
 client/                        React + TypeScript web portal
 mobile/                        Expo / React Native companion app
 docs/                          Reference materials
@@ -27,7 +26,6 @@ docs/                          Reference materials
 - .NET 9 SDK
 - Node.js 20+
 - PostgreSQL 16+ (running locally, database `acme_hr_dev`)
-- Python 3.12+ (only needed for the clocking-report parser — see below)
 
 ### Backend
 
@@ -41,7 +39,7 @@ dotnet run --project src/AcmeHR.Api
 
 `Jwt:Issuer`/`Jwt:Audience`/`Jwt:ExpiryMinutes` have defaults in `appsettings.json`; `Jwt:Key` and `ConnectionStrings:Default` are dev secrets and must be set via `dotnet user-secrets` (never committed).
 
-On startup in Development, the API auto-seeds the `EmployeeRole` Identity roles, a default site ("Kusasalethu Mine"), and two bootstrap admin accounts so the app is usable from a fresh database:
+On startup in Development, the API auto-seeds the `EmployeeRole` Identity roles, a default site ("Head Office"), and two bootstrap admin accounts so the app is usable from a fresh database:
 
 | Email | Password | Role |
 | --- | --- | --- |
@@ -76,18 +74,6 @@ Runs both backend test projects:
 - **`AcmeHR.Infrastructure.Tests`** — unit tests for the Application/Infrastructure service layer against an EF Core in-memory database, covering workflow state machines and validation rules (Auth, Policies, Incidents, Performance, PPE, Legal Appointments, Emergency, Medical, Certificates, Sites, Notifications, Attachments, Timesheet, Employees).
 - **`AcmeHR.Api.Tests`** — integration tests hosting the real API pipeline via `WebApplicationFactory` (EF InMemory swapped in for Postgres), covering CORS, rate limiting, the FluentValidation action filter, and the global exception handler end-to-end through actual HTTP requests — regression coverage for the middleware pipeline itself, not just the service layer.
 
-### Clocking report parser service
-
-The Timesheet page's HR-only "Clocking report parser" (upload an Individual Clocking History PDF from the site's turnstile system, download a formatted Timesheet workbook) is a Python FastAPI service the API proxies to — not reimplemented in C#, since the PDF layout parsing and overtime/rotating-shift business rules are non-trivial and already working. `AcmeHR.Api.Controllers.TimesheetController`'s `POST /api/timesheet/clocking-report-parser` forwards the upload to it over HTTP (`ClockingParser:BaseUrl`, default `http://localhost:8010`); it has no auth of its own, so it must never be reachable from outside the deployment.
-
-```
-cd server/ClockingReportParser
-pip install -r requirements.txt
-uvicorn main:app --port 8010
-```
-
-Runs alongside the .NET API and Postgres — start it before (or alongside) `dotnet run` if you want the parser panel to work locally. Everything else on the Timesheet page works without it.
-
 ### AI agent provider (boards)
 
 The AI assistant on a board (chat, task creation/updates, summaries, task-field suggestions) sits behind `IAiProvider` (`AcmeHR.Application.Agents`), configured via the `AiProvider` section and `AiProvider:Provider`:
@@ -105,6 +91,15 @@ The AI assistant on a board (chat, task creation/updates, summaries, task-field 
 - **`AnthropicClaude`** — not implemented yet; see `AgentToolDispatcher`/`IAiProvider` for the seam it would plug into.
 
 Switching providers is a config change only — no code changes needed anywhere that calls `IAgentService`.
+
+### Attachment storage
+
+Uploaded attachments (PPE certs, medical docs, policy PDFs, incident evidence, ...) sit behind `IFileStorage` (`AcmeHR.Application.Attachments`), configured via the `Storage` section and `Storage:Provider`:
+
+- **`Local`** (default) — `LocalFileStorage`, writes to disk under `App_Data/uploads`. Fine for local dev, but the files live on the container's own filesystem — **never use this for a real deployment**, since that disk is wiped on every redeploy/restart.
+- **`S3`** — `S3FileStorage`, any S3-compatible bucket (Cloudflare R2, AWS S3, MinIO, ...). Set `S3BucketName`, `S3AccessKeyId`, `S3SecretAccessKey`, and (for R2 or another non-AWS endpoint) `S3ServiceUrl`. This is what `render.yaml` configures for `acme-hr-api` — see "Deploying to Render" above.
+
+Attachments are never made publicly readable in the bucket — access control stays entirely in `AttachmentService`, which fetches bytes server-side and streams them back through the authenticated `/api/attachments` endpoints, same as the `Local` provider. Switching providers is a config change only — no code changes needed anywhere that calls `IAttachmentService`.
 
 ### Frontend
 
@@ -133,7 +128,7 @@ npx playwright install chromium   # first time only
 npm run test:e2e
 ```
 
-Playwright specs under `client/e2e/` cover login (valid/invalid credentials, logout), the dashboard, and Employee Directory search/pagination, run against a real running backend + frontend (start both first, per above). Not wired into CI — CI would need a live Postgres, migrated/seeded API, and frontend server orchestrated together, which is a meaningfully different (and unverified, in this environment) pipeline from the plain build/test jobs that run today.
+Playwright specs under `client/e2e/` cover login (valid/invalid credentials, logout), the dashboard, Employee Directory search/pagination, and building/running a workflow, run against a real running backend + frontend (start both first, per above). Also wired into CI (see the `e2e` job in `.github/workflows/ci.yml`), which brings up a throwaway Postgres, lets the API auto-migrate/seed against it, starts the Vite dev server, then runs this suite headless against both.
 
 ### Docker (local only)
 
@@ -141,18 +136,19 @@ Playwright specs under `client/e2e/` cover login (valid/invalid credentials, log
 docker compose up --build
 ```
 
-Starts Postgres, the clocking report parser, the API (`http://localhost:5167`), and the web portal behind nginx (`http://localhost:5173`) as four containers. The API auto-applies EF Core migrations and seeds roles/site/bootstrap accounts on startup (same seeded accounts as above), so a fresh `docker compose up` needs no manual migration step.
+Starts Postgres, the API (`http://localhost:5167`), and the web portal behind nginx (`http://localhost:5173`) as three containers. The API auto-applies EF Core migrations and seeds roles/site/bootstrap accounts on startup (same seeded accounts as above), so a fresh `docker compose up` needs no manual migration step.
 
 This compose file is for local use only, not a production deployment: it runs the API in the `Development` environment (Swagger enabled, verbose EF logging), uses a hardcoded `Jwt__Key` and Postgres password defined directly in `docker-compose.yml`, and serves everything over plain HTTP. Replace those before deploying anywhere real.
 
 ### Deploying to Render (shared testing URL)
 
-`render.yaml` at the repo root is a [Render Blueprint](https://render.com/docs/blueprint-spec) that provisions the whole stack — Postgres, the clocking report parser, the API, and the frontend — from this repo in one go, so people other than you can reach the app over the internet instead of just `localhost`.
+`render.yaml` at the repo root is a [Render Blueprint](https://render.com/docs/blueprint-spec) that provisions the whole stack — Postgres, the API, and the frontend — from this repo in one go, so people other than you can reach the app over the internet instead of just `localhost`.
 
 1. Push this repo to GitHub (Render deploys from a Git remote, not a local working copy).
-2. In the [Render dashboard](https://dashboard.render.com), click **New +** -> **Blueprint** and point it at the repo. Render reads `render.yaml` and shows a preview of the 4 resources it's about to create (`acme-hr-db`, `acme-hr-clocking-parser`, `acme-hr-api`, `acme-hr-client`) — click **Apply**. `acme-hr-clocking-parser` is a private service (no public URL) — it has no auth of its own, so it must only ever be reachable from `acme-hr-api` over Render's internal network, never from the internet.
-3. First deploy takes a few minutes (Postgres provisioning + three Docker/npm builds). Once the API service is live, open its **Logs** tab and confirm you see `Applying migration...` and no seeding errors — that means the bootstrap accounts below now exist on the live database.
-4. Open the client service's URL (shown on its dashboard page, `https://acme-hr-client.onrender.com` unless the name was suffixed — see step 5) and sign in with the same bootstrap credentials as local dev:
+2. In the [Render dashboard](https://dashboard.render.com), click **New +** -> **Blueprint** and point it at the repo. Render reads `render.yaml` and shows a preview of the 3 resources it's about to create (`acme-hr-db`, `acme-hr-api`, `acme-hr-client`) — click **Apply**.
+3. Set up attachment storage: `render.yaml` points `acme-hr-api` at an S3-compatible bucket (`Storage__Provider=S3`) instead of the container's own disk, since that disk is wiped on every redeploy/restart — anything uploaded (PPE certs, medical docs, policy PDFs, ...) would otherwise vanish the next time you ship a change. Create a bucket in [Cloudflare R2](https://dash.cloudflare.com) (has a generous free tier) and an API token scoped to it, then in `acme-hr-api`'s **Environment** tab fill in the four secret values `render.yaml` left blank (`sync: false`): `Storage__S3ServiceUrl` (your R2 account's S3 endpoint, `https://<account_id>.r2.cloudflarestorage.com`), `Storage__S3BucketName`, `Storage__S3AccessKeyId`, `Storage__S3SecretAccessKey`.
+4. First deploy takes a few minutes (Postgres provisioning + Docker/npm builds). Once the API service is live, open its **Logs** tab and confirm you see `Applying migration...` and no seeding errors — that means the bootstrap accounts below now exist on the live database.
+5. Open the client service's URL (shown on its dashboard page, `https://acme-hr-client.onrender.com` unless the name was suffixed — see step 6) and sign in with the same bootstrap credentials as local dev:
 
    | Email | Password | Role |
    | --- | --- | --- |
@@ -160,7 +156,7 @@ This compose file is for local use only, not a production deployment: it runs th
    | `exec.admin@acmehr.local` | `Bootstrap@123` | Executive |
 
    **Change these passwords (Settings > Change password) before sharing the URL with real testers** — they're the same publicly-documented defaults used locally.
-5. If Render suffixed either service's name (only happens if `acme-hr-api`/`-client` were already taken), the API's `Cors__AllowedOrigins__0` env var and the client's `VITE_API_BASE_URL` build-time env var (both set in `render.yaml`) won't match the real URLs. Update them in each service's **Environment** tab to the actual URLs shown on the dashboard, then trigger a manual redeploy of both (the client needs a rebuild since `VITE_API_BASE_URL` is baked into the JS bundle at build time, not read at runtime).
+6. If Render suffixed either service's name (only happens if `acme-hr-api`/`-client` were already taken), the API's `Cors__AllowedOrigins__0` env var and the client's `VITE_API_BASE_URL` build-time env var (both set in `render.yaml`) won't match the real URLs. Update them in each service's **Environment** tab to the actual URLs shown on the dashboard, then trigger a manual redeploy of both (the client needs a rebuild since `VITE_API_BASE_URL` is baked into the JS bundle at build time, not read at runtime).
 
 Free-tier caveats — fine for testing, revisit before treating this as a real deployment:
 - The free Postgres database is deleted after Render's free trial period. Upgrade its plan, or swap `ConnectionStrings__Default` for an external always-free provider (e.g. Neon, Supabase), before relying on it beyond that window.
@@ -171,9 +167,8 @@ Free-tier caveats — fine for testing, revisit before treating this as a real d
 
 ## Modules
 
-All sidebar modules are implemented end-to-end (backend + frontend): Dashboard, Timesheet, Work Shift, Leave Management, Safety & FLRA, Incidents & Near Miss, Policies & Documents, Medical, Training & Certifications, PPE Management, Legal Appointments, Performance (KPI), My Certificates, Reports & Analytics, Emergency (SOS), Settings.
+All sidebar modules are implemented end-to-end (backend + frontend): Dashboard, Work Shift, Leave Management, Safety & FLRA, Incidents & Near Miss, Policies & Documents, Medical, Training & Certifications, PPE Management, Legal Appointments, Performance (KPI), My Certificates, Reports & Analytics, Emergency (SOS), Settings.
 
-- **Timesheet** has no self-service clock-in/out — attendance comes from the site's turnstile system. HR uploads that system's Individual Clocking History PDF via the "Clocking report parser" panel and downloads a formatted Timesheet workbook (see "Clocking report parser service" above); parsed shifts aren't imported back into this app's own Timesheet History.
 - **Work Shift**'s "Post a schedule" is a document upload (HR posts a title + attaches the roster as a PDF/image for everyone to view/download), not an in-app roster builder.
 
 Known simplifications:

@@ -5,6 +5,7 @@ import { getMyBoards } from '../../../src/api/boards';
 import { extractErrorMessage } from '../../../src/api/client';
 import { useAuth } from '../../../src/auth/AuthContext';
 import type { Board } from '../../../src/types/boards';
+import { colors } from '../../../src/theme/colors';
 
 export default function BoardListScreen() {
   const { signOut } = useAuth();
@@ -28,6 +29,9 @@ export default function BoardListScreen() {
           title: 'Boards',
           headerRight: () => (
             <View style={styles.headerActions}>
+              <Pressable onPress={() => router.push('/incidents')} hitSlop={8}>
+                <Text style={styles.headerLink}>Incidents</Text>
+              </Pressable>
               <Pressable onPress={() => router.push('/team')} hitSlop={8}>
                 <Text style={styles.headerLink}>Team</Text>
               </Pressable>
@@ -62,15 +66,15 @@ export default function BoardListScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f6f8' },
+  container: { flex: 1, backgroundColor: colors.background },
   headerActions: { flexDirection: 'row', gap: 16 },
-  headerLink: { color: '#0a3d62', fontWeight: '600', fontSize: 14 },
+  headerLink: { color: colors.ink900, fontWeight: '600', fontSize: 14 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  error: { color: '#c0392b', padding: 12 },
+  error: { color: colors.error, padding: 12 },
   emptyList: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: '#888', fontSize: 15 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     marginHorizontal: 16,
     marginTop: 12,
     padding: 16,
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 28,
-    backgroundColor: '#0a3d62',
+    backgroundColor: colors.ink900,
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderRadius: 28,

@@ -15,4 +15,11 @@ public class ReportsController(IReportsService reportsService) : ControllerBase
         var summary = await reportsService.GetSummaryAsync(cancellationToken);
         return Ok(summary);
     }
+
+    [HttpGet("safety-risk")]
+    public async Task<IActionResult> GetSiteSafetyRisk(CancellationToken cancellationToken)
+    {
+        var risk = await reportsService.GetSiteSafetyRiskAsync(cancellationToken);
+        return Ok(risk);
+    }
 }

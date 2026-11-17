@@ -38,17 +38,17 @@ export function TaskCard({
 
   return (
     <div
-      className={`group flex items-start gap-2 rounded-lg border bg-[#2d2f31] p-3 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg ${
-        isDone ? "border-[#1ecb8f]/30 border-l-2 border-l-[#1ecb8f]" : "border-white/5 hover:border-[#6fbe44]/30"
+      className={`group flex items-start gap-2 rounded-lg border bg-slate-100 p-3 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg ${
+        isDone ? "border-emerald-300 border-l-2 border-l-emerald-500" : "border-slate-100 hover:border-gold-500/40"
       } ${isCelebrating ? "task-complete-pulse" : ""}`}
     >
       <div className="min-w-0 flex-1">
-        <p className={`text-sm ${isDone ? "text-white/50 line-through" : "text-white/90"}`}>{task.title}</p>
-        {task.description && <p className="mt-1 line-clamp-2 text-xs text-white/50">{task.description}</p>}
+        <p className={`text-sm ${isDone ? "text-slate-500 line-through" : "text-slate-800"}`}>{task.title}</p>
+        {task.description && <p className="mt-1 line-clamp-2 text-xs text-slate-500">{task.description}</p>}
 
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {task.assigneeEmployeeName && (
-            <span className="flex items-center gap-1 rounded-full bg-white/5 py-0.5 pl-0.5 pr-2 text-[10px] font-medium text-white/70">
+            <span className="flex items-center gap-1 rounded-full bg-slate-50 py-0.5 pl-0.5 pr-2 text-[10px] font-medium text-slate-600">
               <PersonAvatar name={task.assigneeEmployeeName} size={16} />
               {task.assigneeEmployeeName.split(" ")[0]}
             </span>
@@ -56,7 +56,7 @@ export function TaskCard({
           {task.dueDate && (
             <span
               className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                overdue ? "bg-[#c65a5a]/15 text-[#e69c9c]" : "bg-white/5 text-white/50"
+                overdue ? "bg-red-50 text-red-600" : "bg-slate-50 text-slate-500"
               }`}
             >
               <CalendarDays className="h-2.5 w-2.5" />
@@ -66,7 +66,7 @@ export function TaskCard({
         </div>
 
         {isDone ? (
-          <div className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-[#1ecb8f]">
+          <div className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Completed
           </div>
@@ -77,7 +77,7 @@ export function TaskCard({
                 <button
                   type="button"
                   onClick={() => onMoveStatus(BoardTaskStatus.InProgress)}
-                  className="rounded-full border border-[#f5a83c]/40 px-2 py-0.5 text-[10px] font-medium text-[#f5a83c] transition-colors hover:bg-[#f5a83c]/10"
+                  className="rounded-full border border-amber-300 px-2 py-0.5 text-[10px] font-medium text-amber-600 transition-colors hover:bg-amber-50"
                 >
                   In Progress
                 </button>
@@ -85,7 +85,7 @@ export function TaskCard({
               <button
                 type="button"
                 onClick={() => onMoveStatus(BoardTaskStatus.Done)}
-                className="rounded-full border border-[#1ecb8f]/40 px-2 py-0.5 text-[10px] font-medium text-[#1ecb8f] transition-colors hover:bg-[#1ecb8f]/10"
+                className="rounded-full border border-emerald-300 px-2 py-0.5 text-[10px] font-medium text-emerald-600 transition-colors hover:bg-emerald-50"
               >
                 Completed
               </button>
@@ -101,7 +101,7 @@ export function TaskCard({
               type="button"
               onClick={onEdit}
               aria-label="Edit task"
-              className="rounded p-1 text-white/40 hover:bg-white/10 hover:text-white"
+              className="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             >
               <Pencil className="h-3 w-3" />
             </button>
@@ -111,7 +111,7 @@ export function TaskCard({
               type="button"
               onClick={onDelete}
               aria-label="Delete task"
-              className="rounded p-1 text-white/40 hover:bg-[#c65a5a]/20 hover:text-[#e69c9c]"
+              className="rounded p-1 text-slate-500 hover:bg-red-50 hover:text-red-700"
             >
               <Trash2 className="h-3 w-3" />
             </button>

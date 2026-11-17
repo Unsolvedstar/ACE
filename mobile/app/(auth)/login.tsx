@@ -3,6 +3,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, StyleShee
 import { router } from 'expo-router';
 import { useAuth } from '../../src/auth/AuthContext';
 import { extractErrorMessage } from '../../src/api/client';
+import { colors } from '../../src/theme/colors';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -62,7 +63,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: colors.card },
   title: { fontSize: 28, fontWeight: '700', marginBottom: 4 },
   subtitle: { fontSize: 16, color: '#666', marginBottom: 32 },
   input: {
@@ -74,9 +75,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
   },
-  error: { color: '#c0392b', marginBottom: 12 },
+  error: { color: colors.error, marginBottom: 12 },
   button: {
-    backgroundColor: '#0a3d62',
+    backgroundColor: colors.ink900,
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',

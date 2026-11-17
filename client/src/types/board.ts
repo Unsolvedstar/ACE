@@ -70,6 +70,10 @@ export interface BoardDto {
   ownerEmployeeName: string;
   siteId: string | null;
   siteName: string | null;
+  spaceId: string | null;
+  spaceName: string | null;
+  folderId: string | null;
+  folderName: string | null;
   isArchived: boolean;
   priority: BoardPriority;
   status: BoardStatus;
@@ -83,9 +87,16 @@ export interface CreateBoardRequest {
   name: string;
   description?: string;
   siteId?: string;
+  spaceId?: string;
+  folderId?: string;
   priority: BoardPriority;
   deadline?: string;
   initialMemberEmployeeIds: string[];
+}
+
+export interface MoveBoardRequest {
+  spaceId?: string;
+  folderId?: string;
 }
 
 export interface UpdateBoardRequest {

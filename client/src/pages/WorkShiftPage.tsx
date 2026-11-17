@@ -106,7 +106,7 @@ export function WorkShiftPage() {
               required
               value={form.requestedShiftDate}
               onChange={(e) => setForm((prev) => ({ ...prev, requestedShiftDate: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
 
@@ -117,7 +117,7 @@ export function WorkShiftPage() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, requestedShiftType: Number(e.target.value) as ShiftType }))
               }
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             >
               {Object.entries(ShiftTypeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -140,7 +140,7 @@ export function WorkShiftPage() {
               required
               value={form.reason}
               onChange={(e) => setForm((prev) => ({ ...prev, reason: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
 
@@ -150,7 +150,7 @@ export function WorkShiftPage() {
               value={form.comments}
               onChange={(e) => setForm((prev) => ({ ...prev, comments: e.target.value }))}
               rows={2}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
         </div>
@@ -264,7 +264,7 @@ export function WorkShiftPage() {
                 value={scheduleTitle}
                 onChange={(e) => setScheduleTitle(e.target.value)}
                 placeholder="e.g. Week 34 Roster"
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
               />
             </label>
             <label className="flex flex-1 min-w-[220px] flex-col gap-1 text-sm text-slate-700">
@@ -274,14 +274,14 @@ export function WorkShiftPage() {
                 type="file"
                 accept="application/pdf,image/jpeg,image/png"
                 onChange={(e) => setScheduleFile(e.target.files?.[0] ?? null)}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-slate-700 focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-slate-700 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
               />
             </label>
             <button
               type="button"
               disabled={isPostingSchedule}
               onClick={handlePostScheduleDocument}
-              className="rounded-md bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-50"
+              className="rounded-md bg-gold-600 px-4 py-2 text-sm font-medium text-white hover:bg-gold-500 disabled:opacity-50"
             >
               {isPostingSchedule ? "Posting..." : "Post schedule"}
             </button>

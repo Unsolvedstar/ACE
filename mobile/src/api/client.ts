@@ -81,6 +81,14 @@ apiClient.interceptors.response.use(
   },
 );
 
+// True only when the request never reached the server at all (no connectivity, DNS failure,
+// timeout, ...) - axios sets `error.response` whenever the server actually responded, even
+// with an error status, so its absence is what actually distinguishes "offline" from "the
+// server rejected this".
+export function isNetworkError(error: unknown): boolean {
+  return axios.isAxiosError(error) && !error.response;
+}
+
 export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const errors = error.response?.data?.errors as string[] | undefined;

@@ -2,13 +2,28 @@
 
 :root {
   color-scheme: light;
-  --cream: #f2eee3;
-  --cream-tile: #ece5d3;
+  --cream: #f6f7f9;
+  --cream-tile: #eceef2;
+}
+
+@theme {
+  --color-ink-950: #0e0e10;
+  --color-ink-900: #17181a;
+  --color-ink-800: #202225;
+  --color-ink-700: #2b2d31;
+
+  /* NOTE: the "gold-*" token names are legacy. They now hold the neutral
+     indigo accent so every existing utility class re-themes without touching
+     each component. Rename in a follow-up if desired. */
+  --color-gold-300: #a5b4fc;
+  --color-gold-500: #5b5bd6;
+  --color-gold-600: #4f46e5;
+  --color-gold-700: #3f3ab8;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   background: var(--cream);
 }
@@ -18,6 +33,33 @@ body {
 }
 .bg-cream-tile {
   background-color: var(--cream-tile);
+}
+
+/* ---------------------------------------------------------------------- */
+/* FIFA-hub styling: Sidebar nav tiles + Dashboard cards (see the "AcmeHR   */
+/* FIFA Hub Dashboard" design mockup). Everything else (color, spacing,    */
+/* gradients) stays as Tailwind utility classes in the component files -   */
+/* these three exist only because the diagonal-cut clip-paths repeat too   */
+/* many times to inline legibly, same reasoning as .circuit-texture below. */
+/* ---------------------------------------------------------------------- */
+
+.font-display {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Compact tile cut (Sidebar nav items): corners nicked top-left + bottom-right. */
+.fifa-tile-cut {
+  border-radius: 10px;
+}
+
+/* Larger tile cut (Dashboard stat cards / module tiles): same shape, bigger nick. */
+.fifa-tile-cut-lg {
+  border-radius: 12px;
+}
+
+/* Angled ribbon (category headers / panel section labels): trapezoid cut on the right. */
+.fifa-ribbon-cut {
+  border-radius: 6px;
 }
 
 /* Underground/gloved-hand use: kill the 300ms double-tap-to-zoom delay on
@@ -83,10 +125,10 @@ textarea {
 @keyframes dot-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 0 rgba(91, 91, 214, 0.45);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 4px rgba(91, 91, 214, 0);
   }
 }
 
@@ -136,8 +178,8 @@ textarea {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 25% 30%, rgba(202, 138, 4, 0.24), transparent 55%),
-    radial-gradient(circle at 75% 70%, rgba(30, 41, 59, 0.35), transparent 55%);
+    radial-gradient(circle at 25% 30%, rgba(91, 91, 214, 0.14), transparent 55%),
+    radial-gradient(circle at 75% 70%, rgba(23, 24, 26, 0.12), transparent 55%);
   filter: blur(40px);
   animation: gradient-drift 14s ease-in-out infinite;
 }
@@ -166,7 +208,7 @@ textarea {
   height: 30vw;
   min-width: 260px;
   min-height: 260px;
-  background: #f3e6a8;
+  background: #e4e6f7;
   animation: gradient-drift 16s ease-in-out infinite;
 }
 .soft-blobs::after {
@@ -176,7 +218,7 @@ textarea {
   height: 26vw;
   min-width: 220px;
   min-height: 220px;
-  background: #e7e0cb;
+  background: #e9ebf0;
   animation: gradient-drift 18s ease-in-out infinite reverse;
 }
 .soft-blobs .blob-tr,
@@ -192,7 +234,7 @@ textarea {
   height: 16vw;
   min-width: 140px;
   min-height: 140px;
-  background: #ece5cd;
+  background: #eceef5;
 }
 .soft-blobs .blob-bl {
   bottom: 6%;
@@ -201,25 +243,14 @@ textarea {
   height: 14vw;
   min-width: 120px;
   min-height: 120px;
-  background: #f3e6a8;
+  background: #e4e6f7;
 }
 
 /* Faint circuit-board texture for dark brand surfaces (sidebar, auth
    backdrop): a dot grid plus a few hairline traces, low-opacity so it reads
    as depth rather than pattern. */
 .circuit-texture {
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(rgba(202, 138, 4, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(202, 138, 4, 0.1) 1px, transparent 1px);
-  background-size:
-    22px 22px,
-    88px 88px,
-    88px 88px;
-  background-position:
-    0 0,
-    0 0,
-    0 0;
+  background-image: none;
 }
 
 .sos-pulse {
@@ -261,8 +292,8 @@ button:not(:disabled):active {
 @media (hover: hover) and (pointer: fine) {
   .rounded-lg.border.border-slate-200.bg-white.shadow-sm:hover {
     transform: translateY(-2px);
-    border-color: rgba(202, 138, 4, 0.3);
-    box-shadow: 0 12px 28px -12px rgba(202, 138, 4, 0.25);
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 12px 28px -12px rgba(15, 23, 42, 0.18);
   }
 
   button:not(:disabled):hover,

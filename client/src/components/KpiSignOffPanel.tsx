@@ -51,22 +51,22 @@ export function KpiSignOffPanel({ appraisal, hasSavedSignature, onSigned, onErro
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-[#3a3d40]/90 p-3 backdrop-blur-md">
-      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-white/80">
-        <span className="h-2 w-2 rounded-full bg-[#f5a83c]" />
+    <div className="rounded-xl border border-slate-200 bg-white p-3 backdrop-blur-md">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-slate-700">
+        <span className="h-2 w-2 rounded-full bg-amber-500" />
         Sign as {role}
       </p>
       {!hasSavedSignature && (
-        <div className="overflow-hidden rounded-lg border border-white/10">
+        <div className="overflow-hidden rounded-lg border border-slate-200">
           <SignaturePad ref={signaturePadRef} height={110} />
         </div>
       )}
-      {localError && <p className="mt-1 text-xs text-[#e69c9c]">{localError}</p>}
+      {localError && <p className="mt-1 text-xs text-red-600">{localError}</p>}
       <button
         type="button"
         disabled={isSigning}
         onClick={handleSignClick}
-        className="mt-2 rounded-lg bg-[#6fbe44] px-3 py-1.5 text-xs font-semibold text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+        className="mt-2 rounded-lg bg-gold-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
       >
         {isSigning ? "Signing..." : `Sign as ${role}`}
       </button>

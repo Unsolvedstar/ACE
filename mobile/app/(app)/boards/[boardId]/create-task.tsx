@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getBoard } from '../../../../src/api/boards';
 import { createBoardTask } from '../../../../src/api/tasks';
 import { extractErrorMessage } from '../../../../src/api/client';
+import { colors } from '../../../../src/theme/colors';
 
 export default function CreateTaskScreen() {
   const { boardId } = useLocalSearchParams<{ boardId: string }>();
@@ -82,17 +83,17 @@ export default function CreateTaskScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.card },
   content: { padding: 20 },
   label: { fontSize: 14, fontWeight: '600', marginTop: 16, marginBottom: 6, color: '#333' },
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   memberRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
-  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: '#0a3d62', marginRight: 12 },
-  radioSelected: { backgroundColor: '#0a3d62' },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 1.5, borderColor: colors.ink900, marginRight: 12 },
+  radioSelected: { backgroundColor: colors.ink900 },
   memberName: { fontSize: 15 },
-  error: { color: '#c0392b', marginTop: 12 },
-  button: { backgroundColor: '#0a3d62', borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 24, marginBottom: 40 },
+  error: { color: colors.error, marginTop: 12 },
+  button: { backgroundColor: colors.ink900, borderRadius: 8, paddingVertical: 14, alignItems: 'center', marginTop: 24, marginBottom: 40 },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 });

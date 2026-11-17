@@ -16,7 +16,7 @@ public class LegalAppointmentServiceTests
         var service = new LegalAppointmentService(dbContext, new NotificationService(dbContext));
 
         var result = await service.SubmitAsync(employee.Id, new SubmitLegalAppointmentRequest(
-            LegalAppointmentType.MineManager2_1, "J. Smith, CEO", "Overall control of the mine",
+            LegalAppointmentType.SiteManager, "J. Smith, CEO", "Overall control of the mine",
             new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 5)));
 
         Assert.False(result.Succeeded);
@@ -31,7 +31,7 @@ public class LegalAppointmentServiceTests
         var service = new LegalAppointmentService(dbContext, new NotificationService(dbContext));
 
         var submitted = await service.SubmitAsync(employee.Id, new SubmitLegalAppointmentRequest(
-            LegalAppointmentType.Engineer2_6_1, "J. Smith, Mine Manager", "Engineering oversight",
+            LegalAppointmentType.ResponsibleEngineer, "J. Smith, Mine Manager", "Engineering oversight",
             new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 11)));
         Assert.Equal(LegalAppointmentStatus.Pending, submitted.Value!.Status);
 
@@ -58,7 +58,7 @@ public class LegalAppointmentServiceTests
         var service = new LegalAppointmentService(dbContext, new NotificationService(dbContext));
 
         var submitted = await service.SubmitAsync(employee.Id, new SubmitLegalAppointmentRequest(
-            LegalAppointmentType.CompetentPerson3_1a, "J. Smith, Mine Manager", "Competent person for excavation",
+            LegalAppointmentType.CompetentPerson, "J. Smith, Mine Manager", "Competent person for excavation",
             new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 11)));
         await service.ReviewAsync(submitted.Value!.Id, safetyOfficer.Id, new ReviewLegalAppointmentRequest(false, "Missing competency assessment"));
 
@@ -76,7 +76,7 @@ public class LegalAppointmentServiceTests
         var service = new LegalAppointmentService(dbContext, new NotificationService(dbContext));
 
         var submitted = await service.SubmitAsync(employee.Id, new SubmitLegalAppointmentRequest(
-            LegalAppointmentType.ShiftSupervisor12_1, "J. Smith, Mine Manager", "Shift supervision",
+            LegalAppointmentType.ShiftSupervisor, "J. Smith, Mine Manager", "Shift supervision",
             new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 11)));
         await service.ReviewAsync(submitted.Value!.Id, safetyOfficer.Id, new ReviewLegalAppointmentRequest(true, null));
         await service.RevokeAsync(submitted.Value.Id, new RevokeLegalAppointmentRequest(null));

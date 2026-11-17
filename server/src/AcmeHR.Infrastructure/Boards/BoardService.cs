@@ -27,6 +27,12 @@ public class BoardService(ApplicationDbContext dbContext, INotificationService n
             }
         }
 
+        var placement = await ResolvePlacementAsync(request.SpaceId, request.FolderId, cancellationToken);
+        if (!placement.Succeeded)
+        {
+            return Result<BoardDto>.Failure(placement.Error!);
+        }
+
         var memberIds = request.InitialMemberEmployeeIds.Distinct().Where(id => id != ownerEmployeeId).ToList();
         if (memberIds.Count > 0)
         {
@@ -44,6 +50,8 @@ public class BoardService(ApplicationDbContext dbContext, INotificationService n
             Description = request.Description,
             OwnerEmployeeId = ownerEmployeeId,
             SiteId = request.SiteId,
+            SpaceId = placement.Value!.SpaceId,
+            FolderId = placement.Value!.FolderId,
             Priority = request.Priority,
             Deadline = request.Deadline,
         };
@@ -199,6 +207,69 @@ public class BoardService(ApplicationDbContext dbContext, INotificationService n
         return Result<BoardDto>.Success(await LoadDtoAsync(boardId, cancellationToken));
     }
 
+    public async Task<Result<BoardDto>> MoveAsync(
+        Guid boardId, Guid ownerEmployeeId, MoveBoardRequest request, CancellationToken cancellationToken = default)
+    {
+        var board = await dbContext.Boards.FirstOrDefaultAsync(b => b.Id == boardId, cancellationToken);
+        if (board is null)
+        {
+            return Result<BoardDto>.Failure("Board not found.");
+        }
+
+        if (board.OwnerEmployeeId != ownerEmployeeId)
+        {
+            return Result<BoardDto>.Failure("Only the board owner can move this board.");
+        }
+
+        var placement = await ResolvePlacementAsync(request.SpaceId, request.FolderId, cancellationToken);
+        if (!placement.Succeeded)
+        {
+            return Result<BoardDto>.Failure(placement.Error!);
+        }
+
+        board.SpaceId = placement.Value!.SpaceId;
+        board.FolderId = placement.Value!.FolderId;
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result<BoardDto>.Success(await LoadDtoAsync(boardId, cancellationToken));
+    }
+
+    // A board's SpaceId is denormalized from its Folder's SpaceId (rather than only derivable
+    // through the Folder nav) so that deleting a Folder — which SetNulls Board.FolderId — leaves
+    // the board correctly parented at the Space level instead of becoming unsorted.
+    private async Task<Result<(Guid? SpaceId, Guid? FolderId)>> ResolvePlacementAsync(
+        Guid? requestedSpaceId, Guid? requestedFolderId, CancellationToken cancellationToken)
+    {
+        if (requestedFolderId.HasValue)
+        {
+            var folder = await dbContext.Folders.FirstOrDefaultAsync(f => f.Id == requestedFolderId.Value, cancellationToken);
+            if (folder is null)
+            {
+                return Result<(Guid?, Guid?)>.Failure("The selected folder could not be found.");
+            }
+
+            if (requestedSpaceId.HasValue && requestedSpaceId.Value != folder.SpaceId)
+            {
+                return Result<(Guid?, Guid?)>.Failure("The selected folder does not belong to the selected space.");
+            }
+
+            return Result<(Guid?, Guid?)>.Success((folder.SpaceId, folder.Id));
+        }
+
+        if (requestedSpaceId.HasValue)
+        {
+            var spaceExists = await dbContext.Spaces.AnyAsync(s => s.Id == requestedSpaceId.Value, cancellationToken);
+            if (!spaceExists)
+            {
+                return Result<(Guid?, Guid?)>.Failure("The selected space could not be found.");
+            }
+
+            return Result<(Guid?, Guid?)>.Success((requestedSpaceId.Value, null));
+        }
+
+        return Result<(Guid?, Guid?)>.Success((null, null));
+    }
+
     internal async Task<(bool IsOwner, bool IsMember)?> CheckAccessAsync(
         Guid boardId, Guid requesterId, CancellationToken cancellationToken)
     {
@@ -220,6 +291,8 @@ public class BoardService(ApplicationDbContext dbContext, INotificationService n
         var board = await dbContext.Boards
             .Include(b => b.OwnerEmployee)
             .Include(b => b.Site)
+            .Include(b => b.Space)
+            .Include(b => b.Folder)
             .Include(b => b.Members).ThenInclude(m => m.Employee)
             .Include(b => b.Tasks)
             .FirstAsync(b => b.Id == boardId, cancellationToken);
@@ -235,6 +308,10 @@ public class BoardService(ApplicationDbContext dbContext, INotificationService n
         board.OwnerEmployee!.FullName,
         board.SiteId,
         board.Site?.Name,
+        board.SpaceId,
+        board.Space?.Name,
+        board.FolderId,
+        board.Folder?.Name,
         board.IsArchived,
         board.Priority,
         board.Status,

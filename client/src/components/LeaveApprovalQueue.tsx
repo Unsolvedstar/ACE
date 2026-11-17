@@ -69,7 +69,7 @@ export function LeaveApprovalQueue({ title, items, isBusy, hasSavedSignature, on
                   <p className="flex items-center gap-2 text-sm font-medium text-slate-900">
                     {item.employeeName}
                     {item.isDirectReport && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                      <span className="rounded-full bg-gold-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-700">
                         My team
                       </span>
                     )}
@@ -141,7 +141,7 @@ export function LeaveApprovalQueue({ title, items, isBusy, hasSavedSignature, on
                     placeholder="Reason for rejection (optional)"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
-                    className="min-w-[240px] flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+                    className="min-w-[240px] flex-1 rounded-md border border-slate-300 px-2 py-1 text-xs focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
                   />
                   <button
                     type="button"

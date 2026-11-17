@@ -38,6 +38,13 @@ public class BoardsController(IBoardService boardService) : ControllerBase
         return result.Succeeded ? Ok(result.Value) : BadRequest(new { error = result.Error });
     }
 
+    [HttpPatch("{id:guid}/move")]
+    public async Task<IActionResult> Move(Guid id, MoveBoardRequest request, CancellationToken cancellationToken)
+    {
+        var result = await boardService.MoveAsync(id, User.GetEmployeeId(), request, cancellationToken);
+        return result.Succeeded ? Ok(result.Value) : BadRequest(new { error = result.Error });
+    }
+
     [HttpPost("{id:guid}/members")]
     public async Task<IActionResult> AddMember(Guid id, AddBoardMemberRequest request, CancellationToken cancellationToken)
     {

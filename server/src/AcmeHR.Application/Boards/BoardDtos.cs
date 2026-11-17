@@ -6,9 +6,13 @@ public record CreateBoardRequest(
     string Name,
     string? Description,
     Guid? SiteId,
+    Guid? SpaceId,
+    Guid? FolderId,
     BoardPriority Priority,
     DateOnly? Deadline,
     List<Guid> InitialMemberEmployeeIds);
+
+public record MoveBoardRequest(Guid? SpaceId, Guid? FolderId);
 
 public record UpdateBoardRequest(
     string Name,
@@ -30,6 +34,10 @@ public record BoardDto(
     string OwnerEmployeeName,
     Guid? SiteId,
     string? SiteName,
+    Guid? SpaceId,
+    string? SpaceName,
+    Guid? FolderId,
+    string? FolderName,
     bool IsArchived,
     BoardPriority Priority,
     BoardStatus Status,

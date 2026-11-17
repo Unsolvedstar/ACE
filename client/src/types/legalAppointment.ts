@@ -1,21 +1,21 @@
 export const LegalAppointmentType = {
-  MineManager2_1: 0,
-  Engineer2_6_1: 1,
-  HealthAndSafetyOfficer2_13_1: 2,
-  VentilationOfficer2_17_1: 3,
-  CompetentPerson3_1a: 4,
-  ShiftSupervisor12_1: 5,
+  SiteManager: 0,
+  ResponsibleEngineer: 1,
+  HealthAndSafetyOfficer: 2,
+  ComplianceOfficer: 3,
+  CompetentPerson: 4,
+  ShiftSupervisor: 5,
   Other: 6,
 } as const;
 export type LegalAppointmentType = (typeof LegalAppointmentType)[keyof typeof LegalAppointmentType];
 
 export const LegalAppointmentTypeLabels: Record<LegalAppointmentType, string> = {
-  [LegalAppointmentType.MineManager2_1]: "2.1 – Mine Manager",
-  [LegalAppointmentType.Engineer2_6_1]: "2.6.1 – Engineer",
-  [LegalAppointmentType.HealthAndSafetyOfficer2_13_1]: "2.13.1 – Health & Safety Officer",
-  [LegalAppointmentType.VentilationOfficer2_17_1]: "2.17.1 – Ventilation Officer",
-  [LegalAppointmentType.CompetentPerson3_1a]: "3.1(a) – Competent Person",
-  [LegalAppointmentType.ShiftSupervisor12_1]: "12.1 – Shift Supervisor",
+  [LegalAppointmentType.SiteManager]: "Site Manager",
+  [LegalAppointmentType.ResponsibleEngineer]: "Responsible Engineer",
+  [LegalAppointmentType.HealthAndSafetyOfficer]: "Health & Safety Officer",
+  [LegalAppointmentType.ComplianceOfficer]: "Compliance Officer",
+  [LegalAppointmentType.CompetentPerson]: "Competent Person",
+  [LegalAppointmentType.ShiftSupervisor]: "Shift Supervisor",
   [LegalAppointmentType.Other]: "Other",
 };
 

@@ -299,6 +299,9 @@ namespace AcmeHR.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<Guid?>("FolderId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsArchived")
                         .HasColumnType("boolean");
 
@@ -316,14 +319,21 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.Property<Guid?>("SiteId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("SpaceId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FolderId");
+
                     b.HasIndex("OwnerEmployeeId");
 
                     b.HasIndex("SiteId");
+
+                    b.HasIndex("SpaceId");
 
                     b.ToTable("Boards", (string)null);
                 });
@@ -512,6 +522,33 @@ namespace AcmeHR.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Employees", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Folder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpaceId");
+
+                    b.ToTable("Folders", (string)null);
                 });
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.IncidentReport", b =>
@@ -1301,6 +1338,67 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.ToTable("Sites", (string)null);
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Space", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("OwnerEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("SiteId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerEmployeeId");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("Spaces", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.SpaceMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AddedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SpaceId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SpaceId", "EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("SpaceMembers", (string)null);
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.TimesheetCorrectionRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1373,6 +1471,133 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.HasIndex("EmployeeId", "ClockInUtc");
 
                     b.ToTable("TimesheetEntries", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Workflow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("GraphJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("OwnerEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerEmployeeId");
+
+                    b.ToTable("Workflows", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.WorkflowRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("QueuedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TriggeredByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TriggeredByEmployeeId");
+
+                    b.HasIndex("WorkflowId", "QueuedAtUtc");
+
+                    b.ToTable("WorkflowRuns", (string)null);
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.WorkflowRunStep", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("InputJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NodeId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NodeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("OutputJson")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SequenceNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("WorkflowRunId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowRunId", "SequenceNumber");
+
+                    b.ToTable("WorkflowRunSteps", (string)null);
                 });
 
             modelBuilder.Entity("AcmeHR.Infrastructure.Identity.AppUser", b =>
@@ -1697,6 +1922,11 @@ namespace AcmeHR.Infrastructure.Migrations
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.Board", b =>
                 {
+                    b.HasOne("AcmeHR.Domain.Entities.Folder", "Folder")
+                        .WithMany("Boards")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("AcmeHR.Domain.Entities.Employee", "OwnerEmployee")
                         .WithMany()
                         .HasForeignKey("OwnerEmployeeId")
@@ -1708,9 +1938,18 @@ namespace AcmeHR.Infrastructure.Migrations
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("AcmeHR.Domain.Entities.Space", "Space")
+                        .WithMany("Boards")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Folder");
+
                     b.Navigation("OwnerEmployee");
 
                     b.Navigation("Site");
+
+                    b.Navigation("Space");
                 });
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.BoardMember", b =>
@@ -1793,6 +2032,17 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.Navigation("Manager");
 
                     b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Folder", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Space", "Space")
+                        .WithMany("Folders")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Space");
                 });
 
             modelBuilder.Entity("AcmeHR.Domain.Entities.IncidentReport", b =>
@@ -2000,6 +2250,43 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Space", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "OwnerEmployee")
+                        .WithMany()
+                        .HasForeignKey("OwnerEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.Site", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OwnerEmployee");
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.SpaceMember", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.Space", "Space")
+                        .WithMany("Members")
+                        .HasForeignKey("SpaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Space");
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.TimesheetCorrectionRequest", b =>
                 {
                     b.HasOne("AcmeHR.Domain.Entities.Employee", "Employee")
@@ -2028,6 +2315,47 @@ namespace AcmeHR.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Workflow", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "OwnerEmployee")
+                        .WithMany()
+                        .HasForeignKey("OwnerEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("OwnerEmployee");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.WorkflowRun", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.Employee", "TriggeredByEmployee")
+                        .WithMany()
+                        .HasForeignKey("TriggeredByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AcmeHR.Domain.Entities.Workflow", "Workflow")
+                        .WithMany("Runs")
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TriggeredByEmployee");
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.WorkflowRunStep", b =>
+                {
+                    b.HasOne("AcmeHR.Domain.Entities.WorkflowRun", "WorkflowRun")
+                        .WithMany("Steps")
+                        .HasForeignKey("WorkflowRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkflowRun");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -2093,6 +2421,11 @@ namespace AcmeHR.Infrastructure.Migrations
                     b.Navigation("Tasks");
                 });
 
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Folder", b =>
+                {
+                    b.Navigation("Boards");
+                });
+
             modelBuilder.Entity("AcmeHR.Domain.Entities.KpiAppraisal", b =>
                 {
                     b.Navigation("Items");
@@ -2116,6 +2449,25 @@ namespace AcmeHR.Infrastructure.Migrations
             modelBuilder.Entity("AcmeHR.Domain.Entities.Site", b =>
                 {
                     b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Space", b =>
+                {
+                    b.Navigation("Boards");
+
+                    b.Navigation("Folders");
+
+                    b.Navigation("Members");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.Workflow", b =>
+                {
+                    b.Navigation("Runs");
+                });
+
+            modelBuilder.Entity("AcmeHR.Domain.Entities.WorkflowRun", b =>
+                {
+                    b.Navigation("Steps");
                 });
 #pragma warning restore 612, 618
         }

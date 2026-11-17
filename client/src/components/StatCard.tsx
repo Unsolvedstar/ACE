@@ -11,7 +11,7 @@ interface StatCardProps {
 
 const toneClasses: Record<NonNullable<StatCardProps["tone"]>, string> = {
   default: "text-slate-900",
-  warning: "text-amber-600",
+  warning: "text-gold-700",
   good: "text-emerald-600",
 };
 
@@ -20,16 +20,16 @@ const toneClasses: Record<NonNullable<StatCardProps["tone"]>, string> = {
 // semantic) stat tiles stay muted while amber/emerald/red keep their meaning
 // (warning/good/danger).
 const iconToneClasses: Record<NonNullable<StatCardProps["iconTone"]>, string> = {
-  blue: "bg-gradient-to-br from-[#f3efe4] to-[#e7dfc9] text-stone-700",
-  amber: "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600",
+  blue: "bg-gradient-to-br from-slate-100 to-slate-200 text-stone-700",
+  amber: "bg-gradient-to-br from-gold-500/10 to-gold-500/20 text-gold-700",
   emerald: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600",
   red: "bg-gradient-to-br from-red-50 to-red-100 text-red-600",
   violet: "bg-gradient-to-br from-stone-100 to-stone-200 text-stone-600",
 };
 
 const accentBarClasses: Record<NonNullable<StatCardProps["iconTone"]>, string> = {
-  blue: "from-[#e7dfc9] to-[#d8cca3]",
-  amber: "from-amber-400 to-amber-500",
+  blue: "from-slate-200 to-slate-300",
+  amber: "from-gold-300 to-gold-500",
   emerald: "from-emerald-400 to-emerald-500",
   red: "from-red-400 to-red-500",
   violet: "from-stone-300 to-stone-400",

@@ -7,6 +7,7 @@ import { getBoardTask, changeTaskStatus } from '../../../../../src/api/tasks';
 import { getTaskAttachments, uploadTaskProof } from '../../../../../src/api/attachments';
 import { extractErrorMessage } from '../../../../../src/api/client';
 import { BoardTaskStatus, BoardTaskStatusLabels } from '../../../../../src/types/boards';
+import { colors } from '../../../../../src/theme/colors';
 
 const STATUS_OPTIONS: BoardTaskStatus[] = [BoardTaskStatus.Todo, BoardTaskStatus.InProgress, BoardTaskStatus.Done];
 
@@ -134,7 +135,7 @@ export default function TaskDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.card },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { padding: 20, paddingBottom: 60 },
   title: { fontSize: 22, fontWeight: '700' },
@@ -142,15 +143,15 @@ const styles = StyleSheet.create({
   meta: { color: '#888', marginTop: 6, fontSize: 13 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginTop: 24, marginBottom: 10, textTransform: 'uppercase' },
   statusRow: { flexDirection: 'row', gap: 8 },
-  statusChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#0a3d62' },
-  statusChipActive: { backgroundColor: '#0a3d62' },
-  statusChipText: { color: '#0a3d62', fontWeight: '600', fontSize: 13 },
+  statusChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.ink900 },
+  statusChipActive: { backgroundColor: colors.ink900 },
+  statusChipText: { color: colors.ink900, fontWeight: '600', fontSize: 13 },
   statusChipTextActive: { color: '#fff' },
-  uploadButton: { backgroundColor: '#0a3d62', borderRadius: 8, paddingVertical: 12, alignItems: 'center', width: 160 },
+  uploadButton: { backgroundColor: colors.ink900, borderRadius: 8, paddingVertical: 12, alignItems: 'center', width: 160 },
   uploadButtonText: { color: '#fff', fontWeight: '600' },
   attachmentRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#eee' },
   attachmentName: { fontSize: 14, fontWeight: '500' },
   attachmentMeta: { fontSize: 12, color: '#888', marginTop: 2 },
   emptyText: { color: '#999', fontStyle: 'italic' },
-  error: { color: '#c0392b', marginTop: 10 },
+  error: { color: colors.error, marginTop: 10 },
 });

@@ -111,7 +111,7 @@ export function NotificationBell() {
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Notifications</p>
             {unreadCount > 0 && (
-              <button type="button" onClick={handleMarkAllAsRead} className="text-xs text-yellow-600 hover:underline">
+              <button type="button" onClick={handleMarkAllAsRead} className="text-xs text-gold-600 hover:underline">
                 Mark all as read
               </button>
             )}
@@ -127,7 +127,7 @@ export function NotificationBell() {
                       type="button"
                       onClick={() => handleNotificationClick(notification)}
                       className={`flex w-full flex-col items-start gap-0.5 px-4 py-3 text-left text-sm hover:bg-slate-50 ${
-                        notification.isRead ? "text-slate-500" : "bg-yellow-50/50 font-medium text-slate-900"
+                        notification.isRead ? "text-slate-500" : "bg-gold-500/10 font-medium text-slate-900"
                       }`}
                     >
                       <span>{notification.message}</span>

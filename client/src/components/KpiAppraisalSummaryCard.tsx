@@ -8,18 +8,18 @@ import { formatDateTime } from "../lib/format";
 import { KpiAppraisalStatus, type KpiAppraisalSummaryDto } from "../types/kpi";
 
 function scorePercentColor(percent: number | null): string {
-  if (percent === null) return "bg-white/15";
-  if (percent >= 80) return "bg-[#1ecb8f]";
-  if (percent >= 50) return "bg-[#f5a83c]";
-  return "bg-[#c65a5a]";
+  if (percent === null) return "bg-slate-200";
+  if (percent >= 80) return "bg-emerald-500";
+  if (percent >= 50) return "bg-amber-500";
+  return "bg-red-600";
 }
 
 function accentBorderColor(status: KpiAppraisalStatus): string {
   switch (status) {
     case KpiAppraisalStatus.Finalized:
-      return "border-l-[#1ecb8f]";
+      return "border-l-emerald-500";
     case KpiAppraisalStatus.PendingBlastingEngineerSignOff:
-      return "border-l-[#f5a83c]";
+      return "border-l-amber-500";
     default:
       return "border-l-white/20";
   }
@@ -28,14 +28,14 @@ function accentBorderColor(status: KpiAppraisalStatus): string {
 function CategoryBar({ name, scorePercent }: { name: string; scorePercent: number | null }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-36 shrink-0 truncate text-[11px] text-white/60">{name}</span>
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full border border-white/10 bg-white/5">
+      <span className="w-36 shrink-0 truncate text-[11px] text-slate-600">{name}</span>
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
         <div
           className={`h-full rounded-full transition-[width] duration-300 ${scorePercentColor(scorePercent)}`}
           style={{ width: `${scorePercent ?? 0}%` }}
         />
       </div>
-      <span className="w-9 shrink-0 text-right text-[11px] text-white/50">
+      <span className="w-9 shrink-0 text-right text-[11px] text-slate-500">
         {scorePercent === null ? "—" : `${scorePercent}%`}
       </span>
     </div>
@@ -61,14 +61,14 @@ export function KpiAppraisalSummaryCard({ appraisal, onError, actions, footer }:
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl border-l-4 ${accentBorderColor(appraisal.status)} bg-[#3a3d40] p-4 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl`}
+      className={`flex flex-col gap-3 rounded-xl border-l-4 ${accentBorderColor(appraisal.status)} bg-white p-4 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <KpiAvatar name={appraisal.employeeName} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-white">{appraisal.employeeName}</p>
-            <p className="truncate text-xs text-white/50">
+            <p className="truncate text-sm font-semibold text-slate-900">{appraisal.employeeName}</p>
+            <p className="truncate text-xs text-slate-500">
               {appraisal.designation} — {appraisal.periodLabel}
             </p>
             <div className="mt-1">
@@ -87,7 +87,7 @@ export function KpiAppraisalSummaryCard({ appraisal, onError, actions, footer }:
         </div>
       )}
 
-      <p className="text-[11px] text-white/40">
+      <p className="text-[11px] text-slate-500">
         {appraisal.lastReviewedAtUtc ? `Last scored ${formatDateTime(appraisal.lastReviewedAtUtc)}` : "Not scored yet"}
         {appraisal.signedOffBy.length > 0 && ` · Signed by ${appraisal.signedOffBy.join(", ")}`}
       </p>
@@ -96,7 +96,7 @@ export function KpiAppraisalSummaryCard({ appraisal, onError, actions, footer }:
         <button
           type="button"
           onClick={handleDownload}
-          className="rounded-lg border border-[#6fbe44]/40 px-3 py-1.5 text-xs font-medium text-[#93d75f] transition-colors hover:bg-[#6fbe44]/10"
+          className="rounded-lg border border-gold-500/40 px-3 py-1.5 text-xs font-medium text-gold-700 transition-colors hover:bg-gold-500/10"
         >
           PDF
         </button>

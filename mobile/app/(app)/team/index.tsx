@@ -8,6 +8,7 @@ import { getWeeklySummary, getWeeklySummaryPdf } from '../../../src/api/tasks';
 import { extractErrorMessage } from '../../../src/api/client';
 import { useBoardLiveUpdates } from '../../../src/realtime/useBoardLiveUpdates';
 import { WeeklyPerformanceChart } from '../../../src/components/WeeklyPerformanceChart';
+import { colors } from '../../../src/theme/colors';
 
 export default function TeamPerformanceScreen() {
   const boards = useQuery({ queryKey: ['boards', 'mine'], queryFn: getMyBoards });
@@ -96,19 +97,19 @@ export default function TeamPerformanceScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: colors.card },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   content: { padding: 20 },
   sectionTitle: { fontSize: 14, fontWeight: '700', color: '#555', marginTop: 16, marginBottom: 10, textTransform: 'uppercase' },
   sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  exportButton: { borderWidth: 1, borderColor: '#0a3d62', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
+  exportButton: { borderWidth: 1, borderColor: colors.ink900, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
   exportButtonDisabled: { opacity: 0.6 },
-  exportButtonText: { color: '#0a3d62', fontWeight: '600', fontSize: 12 },
+  exportButtonText: { color: colors.ink900, fontWeight: '600', fontSize: 12 },
   boardRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  boardChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#0a3d62' },
-  boardChipActive: { backgroundColor: '#0a3d62' },
-  boardChipText: { color: '#0a3d62', fontWeight: '600', fontSize: 13 },
+  boardChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: colors.ink900 },
+  boardChipActive: { backgroundColor: colors.ink900 },
+  boardChipText: { color: colors.ink900, fontWeight: '600', fontSize: 13 },
   boardChipTextActive: { color: '#fff' },
   emptyText: { color: '#888', fontStyle: 'italic' },
-  error: { color: '#c0392b' },
+  error: { color: colors.error },
 });

@@ -12,6 +12,8 @@ using AcmeHR.Application.Common.Interfaces;
 using AcmeHR.Application.Dashboard;
 using AcmeHR.Application.Documents;
 using AcmeHR.Application.Employees;
+using AcmeHR.Application.Folders;
+using AcmeHR.Application.Incidents;
 using AcmeHR.Application.Leave;
 using AcmeHR.Application.LegalAppointments;
 using AcmeHR.Application.Medical;
@@ -21,8 +23,10 @@ using AcmeHR.Application.Policies;
 using AcmeHR.Application.Ppe;
 using AcmeHR.Application.Reports;
 using AcmeHR.Application.Sites;
+using AcmeHR.Application.Spaces;
 using AcmeHR.Application.Timesheet;
 using AcmeHR.Application.WorkShift;
+using AcmeHR.Application.Workflows;
 using AcmeHR.Infrastructure.Auth;
 using AcmeHR.Infrastructure.Identity;
 using AcmeHR.Infrastructure.Persistence;
@@ -73,7 +77,6 @@ public static class DependencyInjection
 
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<Attachments.FileStorageSettings>(configuration.GetSection(Attachments.FileStorageSettings.SectionName));
-        services.Configure<Timesheet.ClockingParserSettings>(configuration.GetSection(Timesheet.ClockingParserSettings.SectionName));
         services.Configure<Agents.AiProviderSettings>(configuration.GetSection(Agents.AiProviderSettings.SectionName));
 
         var jwtSettings = configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>() ?? new JwtSettings();
@@ -130,6 +133,7 @@ public static class DependencyInjection
         services.AddScoped<IPolicyService, Policies.PolicyService>();
         services.AddScoped<IMedicalService, Medical.MedicalService>();
         services.AddScoped<IPpeService, Ppe.PpeService>();
+        services.AddScoped<IIncidentService, Incidents.IncidentService>();
         services.AddScoped<ILegalAppointmentService, LegalAppointments.LegalAppointmentService>();
         services.AddScoped<IReportsService, Reports.ReportsService>();
         services.AddScoped<IEmployeeDirectoryService, Employees.EmployeeDirectoryService>();
@@ -137,14 +141,22 @@ public static class DependencyInjection
         services.AddScoped<IAcknowledgmentService, Acknowledgments.AcknowledgmentService>();
         services.AddScoped<INotificationService, Notifications.NotificationService>();
         services.AddScoped<ISiteService, Sites.SiteService>();
+        services.AddScoped<ISpaceService, Spaces.SpaceService>();
+        services.AddScoped<IFolderService, Folders.FolderService>();
         services.AddScoped<IBoardService, Boards.BoardService>();
         services.AddScoped<IBoardTaskService, Boards.BoardTaskService>();
         services.AddScoped<IBoardPerformanceService, Boards.BoardPerformanceService>();
         services.AddScoped<IDocumentSigningService, Documents.DocumentSigningService>();
         services.AddScoped<Agents.AgentToolDispatcher>();
+        services.AddScoped<Agents.BoardContextBuilder>();
         services.AddScoped<IAgentService, Agents.AgentService>();
         services.AddScoped<IAgentActionService, Agents.AgentActionService>();
         services.AddScoped<IAgentSettingsService, Agents.AgentSettingsService>();
+        services.AddScoped<IWorkflowService, Workflows.WorkflowService>();
+        services.AddScoped<IWorkflowRunService, Workflows.WorkflowRunService>();
+        services.AddScoped<IWorkflowRunExecutor, Workflows.WorkflowRunExecutor>();
+        services.AddSingleton<Workflows.WorkflowGraphSecretProtector>();
+        services.AddSingleton<IWorkflowRunQueue, Workflows.WorkflowRunQueue>();
 
         // AiProvider:Provider selects the implementation: "Mock" (default, zero external calls),
         // "Ollama" (free local model, no API key/billing — requires Ollama running locally), or
@@ -167,16 +179,32 @@ public static class DependencyInjection
             services.AddScoped<IAiProvider, Agents.RuleBasedAiProvider>();
         }
 
-        services.AddHttpClient<IClockingReportParserService, Timesheet.ClockingReportParserService>((sp, client) =>
+        // Storage:Provider selects the implementation: "Local" (default, disk-backed — dev only,
+        // wiped on every redeploy/restart) or "S3" (any S3-compatible bucket, e.g. Cloudflare R2).
+        // No Attachments call site changes when switching between them.
+        var fileStorageSettings = configuration.GetSection(Attachments.FileStorageSettings.SectionName).Get<Attachments.FileStorageSettings>()
+            ?? new Attachments.FileStorageSettings();
+        if (string.Equals(fileStorageSettings.Provider, "S3", StringComparison.OrdinalIgnoreCase))
         {
-            var settings = sp.GetRequiredService<IOptions<Timesheet.ClockingParserSettings>>().Value;
-            client.BaseAddress = new Uri(settings.BaseUrl);
-            // Multi-page clocking reports can take a while to parse (pdfplumber's word
-            // extraction is the slow part) - give it much more room than a typical API call.
-            client.Timeout = TimeSpan.FromMinutes(3);
+            services.AddSingleton<IFileStorage, Attachments.S3FileStorage>();
+        }
+        else
+        {
+            services.AddSingleton<IFileStorage, Attachments.LocalFileStorage>();
+        }
+
+        services.AddHttpClient<IWebhookSender, Workflows.WebhookSender>((sp, client) =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
         });
 
+        // No credential vault in this pass - only per-node webhook URLs/headers need protecting
+        // at rest (see WorkflowGraphSecretProtector), and Data Protection is the built-in way to
+        // do that without a new dependency.
+        services.AddDataProtection();
+
         services.AddHostedService<Auth.RefreshTokenCleanupService>();
+        services.AddHostedService<Workflows.WorkflowExecutionWorker>();
 
         return services;
     }

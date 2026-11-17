@@ -11,10 +11,10 @@ namespace AcmeHR.Infrastructure.Tests.Attachments;
 public class AttachmentServiceTests
 {
     private static AttachmentService CreateService(ApplicationDbContext dbContext) =>
-        new(dbContext, Options.Create(new FileStorageSettings
+        new(dbContext, new LocalFileStorage(Options.Create(new FileStorageSettings
         {
             UploadsRootPath = Path.Combine(Path.GetTempPath(), "acmehr-attachment-tests", Guid.NewGuid().ToString()),
-        }));
+        })));
 
     private static UploadAttachmentRequest ValidPdf() =>
         new("evidence.pdf", "application/pdf", [1, 2, 3, 4]);

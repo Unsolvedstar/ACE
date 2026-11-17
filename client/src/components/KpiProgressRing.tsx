@@ -25,7 +25,7 @@ export function KpiProgressRing({ percent, size = 56 }: KpiProgressRingProps) {
         background: `radial-gradient(#2d2f31 63%, transparent 64%), conic-gradient(${color} ${angle}deg, rgba(255,255,255,0.1) ${angle}deg 360deg)`,
       }}
     >
-      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold text-white">
+      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold text-slate-900">
         {percent === null ? "—" : `${percent}%`}
       </span>
     </div>

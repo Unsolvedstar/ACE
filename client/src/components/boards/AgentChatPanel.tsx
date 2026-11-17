@@ -116,26 +116,26 @@ export function AgentChatPanel({ boardId, canDecideActions, refreshSignal, onClo
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex justify-end bg-slate-950/60">
-      <div className="flex h-full w-full max-w-md flex-col border-l border-white/10 bg-[#3a3d40] shadow-2xl font-['Inter']">
-        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+    <div className="fixed inset-0 z-[90] flex justify-end bg-ink-950/60">
+      <div className="flex h-full w-full max-w-md flex-col border-l border-slate-200 bg-white shadow-2xl font-['Inter']">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#93d75f]" />
-            <h3 className="text-sm font-semibold text-white">AI Assistant</h3>
+            <Sparkles className="h-4 w-4 text-gold-700" />
+            <h3 className="text-sm font-semibold text-slate-900">AI Assistant</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-md p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white/70"
+            className="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-600"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
         {pendingActions.length > 0 && (
-          <div className="flex flex-col gap-2 border-b border-white/10 px-4 py-3">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-white/40">
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
               Pending actions ({pendingActions.length})
             </span>
             {pendingActions.map((action) => (
@@ -153,9 +153,9 @@ export function AgentChatPanel({ boardId, canDecideActions, refreshSignal, onClo
 
         <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-4 py-3">
           {isLoading ? (
-            <p className="text-sm text-white/40">Loading...</p>
+            <p className="text-sm text-slate-500">Loading...</p>
           ) : messages.length === 0 ? (
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-slate-500">
               Ask me about this board — what's overdue, who's busy, get a standup summary, or ask me to create or
               update a task.
             </p>
@@ -168,8 +168,8 @@ export function AgentChatPanel({ boardId, canDecideActions, refreshSignal, onClo
                   <div
                     className={`max-w-[85%] whitespace-pre-wrap rounded-xl px-3 py-2 text-sm ${
                       message.role === AgentMessageRole.User
-                        ? "border border-[#6fbe44]/40 bg-[#6fbe44]/20 text-white"
-                        : "bg-[#202325] text-white/90"
+                        ? "border border-gold-500/40 bg-gold-500/10 text-slate-900"
+                        : "bg-slate-50 text-slate-800"
                     }`}
                   >
                     {message.content}
@@ -191,34 +191,34 @@ export function AgentChatPanel({ boardId, canDecideActions, refreshSignal, onClo
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="flex flex-wrap gap-1.5 border-t border-white/10 px-4 pt-2">
+        <div className="flex flex-wrap gap-1.5 border-t border-slate-200 px-4 pt-2">
           {QUICK_PROMPTS.map((prompt) => (
             <button
               key={prompt}
               type="button"
               disabled={isSending}
               onClick={() => sendContent(prompt)}
-              className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] font-medium text-white/60 transition-colors hover:bg-white/5 disabled:opacity-50"
+              className="rounded-full border border-slate-300 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
             >
               {prompt}
             </button>
           ))}
         </div>
 
-        {error && <p className="px-4 pt-2 text-sm text-[#e69c9c]">{error}</p>}
+        {error && <p className="px-4 pt-2 text-sm text-red-600">{error}</p>}
 
         <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Ask the assistant..."
-            className="flex-1 rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#6fbe44] focus:outline-none focus:ring-2 focus:ring-[#6fbe44]/20"
+            className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
           />
           <button
             type="submit"
             disabled={isSending || !draft.trim()}
             aria-label="Send"
-            className="rounded-lg bg-[#6fbe44] p-2 text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+            className="rounded-lg bg-gold-600 p-2 text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
           >
             <Send className="h-4 w-4" />
           </button>

@@ -10,8 +10,8 @@ import { StepForm, type WizardStep } from "../components/StepForm";
 import { BoardPriority, BoardPriorityLabels, type BoardDto } from "../types/board";
 
 const inputClasses =
-  "rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#6fbe44] focus:outline-none focus:ring-2 focus:ring-[#6fbe44]/20";
-const labelClasses = "flex flex-col gap-1 text-sm text-white/70";
+  "rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15";
+const labelClasses = "flex flex-col gap-1 text-sm text-slate-600";
 
 export function BoardsPage() {
   const { session } = useAuth();
@@ -112,7 +112,7 @@ export function BoardsPage() {
       title: "Who's on this board?",
       content: (
         <div className="flex flex-col gap-2">
-          <p className="text-xs text-white/40">You're added automatically. Pick anyone else who should have access.</p>
+          <p className="text-xs text-slate-500">You're added automatically. Pick anyone else who should have access.</p>
           <BoardMemberPicker
             selectedIds={memberIds}
             onChange={setMemberIds}
@@ -126,11 +126,11 @@ export function BoardsPage() {
   return (
     <div className="stagger-children flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-white">Boards</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Boards</h2>
         <button
           type="button"
           onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-[#6fbe44] px-4 py-2 text-sm font-semibold text-[#131415] transition-colors hover:bg-[#93d75f]"
+          className="flex items-center gap-1.5 rounded-lg bg-gold-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-500"
         >
           <Plus className="h-4 w-4" />
           New board
@@ -138,9 +138,9 @@ export function BoardsPage() {
       </div>
 
       {isCreateOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#3a3d40] p-6 shadow-2xl font-['Inter']">
-            <h3 className="mb-4 text-sm font-semibold text-white">Create board</h3>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/60 px-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl font-['Inter']">
+            <h3 className="mb-4 text-sm font-semibold text-slate-900">Create board</h3>
             <StepForm
               theme="dark"
               steps={createSteps}
@@ -156,7 +156,7 @@ export function BoardsPage() {
                 setIsCreateOpen(false);
                 resetForm();
               }}
-              className="mt-3 text-xs text-white/40 hover:text-white/70 hover:underline"
+              className="mt-3 text-xs text-slate-500 hover:text-slate-600 hover:underline"
             >
               Cancel
             </button>
@@ -171,7 +171,7 @@ export function BoardsPage() {
           <KpiSkeletonCard />
         </div>
       ) : boards.length === 0 ? (
-        <p className="rounded-xl border border-white/10 bg-[#3a3d40] px-6 py-8 text-center text-sm text-white/40">
+        <p className="rounded-xl border border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
           No boards yet.
         </p>
       ) : (
@@ -182,7 +182,7 @@ export function BoardsPage() {
         </div>
       )}
 
-      {error && !isCreateOpen && <p className="text-sm text-[#e69c9c]">{error}</p>}
+      {error && !isCreateOpen && <p className="text-sm text-red-600">{error}</p>}
     </div>
   );
 }

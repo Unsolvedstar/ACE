@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Award, CalendarOff, Download, HardHat, Scale, Users } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { extractErrorMessage } from "../api/client";
-import { getReportsSummary } from "../api/reports";
+import { getReportsSummary, getSiteSafetyRisk } from "../api/reports";
+import { SiteSafetyRiskPanel } from "../components/SiteSafetyRiskPanel";
 import { StatCard } from "../components/StatCard";
 import { useToast } from "../components/ToastProvider";
 import { downloadCsv } from "../lib/csv";
 import { EmployeeRole, EmployeeRoleLabels } from "../types/auth";
 import { IncidentSeverityLabels } from "../types/incident";
-import type { ReportsSummaryDto } from "../types/reports";
+import type { ReportsSummaryDto, SiteSafetyRiskDto } from "../types/reports";
 
 const ALLOWED_ROLES: EmployeeRole[] = [EmployeeRole.HR, EmployeeRole.SafetyOfficer, EmployeeRole.Executive];
 
@@ -18,12 +19,16 @@ export function ReportsPage() {
   const isAllowed = session ? ALLOWED_ROLES.includes(session.role) : false;
 
   const [summary, setSummary] = useState<ReportsSummaryDto | null>(null);
+  const [siteSafetyRisk, setSiteSafetyRisk] = useState<SiteSafetyRiskDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAllowed) return;
     getReportsSummary()
       .then(setSummary)
+      .catch((err) => setError(extractErrorMessage(err)));
+    getSiteSafetyRisk()
+      .then(setSiteSafetyRisk)
       .catch((err) => setError(extractErrorMessage(err)));
   }, [isAllowed]);
 
@@ -126,6 +131,12 @@ export function ReportsPage() {
           iconTone="violet"
         />
       </div>
+
+      {siteSafetyRisk ? (
+        <SiteSafetyRiskPanel sites={siteSafetyRisk} />
+      ) : (
+        <p className="text-sm text-slate-500">Loading site safety risk...</p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">

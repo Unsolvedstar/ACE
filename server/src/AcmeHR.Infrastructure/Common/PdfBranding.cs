@@ -10,9 +10,9 @@ internal static class PdfBranding
 {
     private static readonly Lazy<byte[]?> CachedLogo = new(LoadEmbeddedLogo);
 
-    public const string CompanyName = "Acme Mining Technologies";
+    public const string CompanyName = "AcmeHR";
 
-    /// <summary>The Acme Mining logo, or null if the embedded resource is missing — callers should render without it rather than throw.</summary>
+    /// <summary>The AcmeHR logo, or null if the embedded resource is missing — callers should render without it rather than throw.</summary>
     public static byte[]? Logo => CachedLogo.Value;
 
     /// <summary>

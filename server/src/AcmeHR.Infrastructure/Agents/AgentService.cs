@@ -11,7 +11,8 @@ public class AgentService(
     ApplicationDbContext dbContext,
     IAiProvider aiProvider,
     IOptions<AiProviderSettings> aiProviderSettings,
-    AgentToolDispatcher toolDispatcher) : IAgentService
+    AgentToolDispatcher toolDispatcher,
+    BoardContextBuilder boardContextBuilder) : IAgentService
 {
     public async Task<Result<AgentConversationDto>> GetOrCreateConversationAsync(
         Guid boardId, Guid employeeId, CancellationToken cancellationToken = default)
@@ -84,7 +85,7 @@ public class AgentService(
             .Select(m => new AiChatMessage(m.Role == Domain.Enums.AgentMessageRole.User ? "user" : "assistant", m.Content))
             .ToListAsync(cancellationToken);
 
-        var boardContext = await BuildBoardContextAsync(boardId, cancellationToken);
+        var boardContext = await boardContextBuilder.BuildAsync(boardId, cancellationToken);
 
         var response = await aiProvider.GetChatResponseAsync(
             new AiChatRequest(boardContext, history, request.Content, ToolsEnabled: true), cancellationToken);
@@ -143,7 +144,7 @@ public class AgentService(
             return Result<AgentSummaryDto>.Failure("You are not a member of this board.");
         }
 
-        var boardContext = await BuildBoardContextAsync(boardId, cancellationToken);
+        var boardContext = await boardContextBuilder.BuildAsync(boardId, cancellationToken);
         var summary = await aiProvider.SummarizeAsync(new AiSummaryRequest(boardContext, sinceDate), cancellationToken);
         return Result<AgentSummaryDto>.Success(new AgentSummaryDto(summary));
     }
@@ -161,7 +162,7 @@ public class AgentService(
             return Result<AgentTaskSuggestionDto>.Failure("You are not a member of this board.");
         }
 
-        var boardContext = await BuildBoardContextAsync(boardId, cancellationToken);
+        var boardContext = await boardContextBuilder.BuildAsync(boardId, cancellationToken);
         var suggestion = await aiProvider.SuggestTaskFieldsAsync(
             new AiTaskSuggestionRequest(boardContext, request.TitleDraft, request.DescriptionDraft), cancellationToken);
 
@@ -199,33 +200,6 @@ public class AgentService(
         dbContext.AgentConversations.Add(conversation);
         await dbContext.SaveChangesAsync(cancellationToken);
         return conversation;
-    }
-
-    private async Task<AiBoardContext> BuildBoardContextAsync(Guid boardId, CancellationToken cancellationToken)
-    {
-        var board = await dbContext.Boards
-            .Include(b => b.Members).ThenInclude(m => m.Employee)
-            .Include(b => b.Tasks).ThenInclude(t => t.AssigneeEmployee)
-            .FirstAsync(b => b.Id == boardId, cancellationToken);
-
-        var members = board.Members
-            .Select(m => new AiBoardMemberContext(m.EmployeeId, m.Employee!.FullName, m.Employee.JobTitle))
-            .ToList();
-
-        var tasks = board.Tasks
-            .Select(t => new AiBoardTaskContext(
-                t.Id,
-                t.Title,
-                t.Description,
-                t.AssigneeEmployeeId,
-                t.AssigneeEmployee?.FullName,
-                t.Status.ToString(),
-                t.DueDate,
-                t.CreatedAtUtc,
-                t.CompletedAtUtc))
-            .ToList();
-
-        return new AiBoardContext(board.Id, board.Name, members, tasks);
     }
 
     private async Task<bool?> CheckAccessAsync(Guid boardId, Guid requesterId, CancellationToken cancellationToken)

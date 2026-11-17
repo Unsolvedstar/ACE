@@ -5,8 +5,8 @@ import { extractErrorMessage } from "../../api/client";
 import type { BoardMemberDto, BoardTaskDto } from "../../types/board";
 
 const inputClasses =
-  "rounded-lg border border-white/10 bg-[#202325] px-3 py-2 text-sm text-white placeholder:text-white/30 focus:border-[#6fbe44] focus:outline-none focus:ring-2 focus:ring-[#6fbe44]/20";
-const labelClasses = "flex flex-col gap-1 text-sm text-white/70";
+  "rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15";
+const labelClasses = "flex flex-col gap-1 text-sm text-slate-600";
 
 export interface TaskFormValues {
   title: string;
@@ -75,9 +75,9 @@ export function TaskFormDialog({ boardId, members, task, isSubmitting, error, on
   }
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#3a3d40] p-6 shadow-2xl font-['Inter']">
-        <h3 className="mb-4 text-sm font-semibold text-white">{task ? "Edit task" : "New task"}</h3>
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/60 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl font-['Inter']">
+        <h3 className="mb-4 text-sm font-semibold text-slate-900">{task ? "Edit task" : "New task"}</h3>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label className={labelClasses}>
             <span className="flex items-center justify-between gap-2">
@@ -86,7 +86,7 @@ export function TaskFormDialog({ boardId, members, task, isSubmitting, error, on
                 type="button"
                 disabled={!values.title.trim() || isSuggesting}
                 onClick={handleSuggest}
-                className="flex items-center gap-1 text-[11px] font-medium text-[#93d75f] transition-colors hover:underline disabled:cursor-not-allowed disabled:text-white/30 disabled:no-underline"
+                className="flex items-center gap-1 text-[11px] font-medium text-gold-700 transition-colors hover:underline disabled:cursor-not-allowed disabled:text-slate-400 disabled:no-underline"
               >
                 <Sparkles className="h-3 w-3" />
                 {isSuggesting ? "Suggesting..." : "Suggest"}
@@ -109,18 +109,18 @@ export function TaskFormDialog({ boardId, members, task, isSubmitting, error, on
               className={inputClasses}
             />
           </label>
-          {suggestError && <p className="text-xs text-[#e69c9c]">{suggestError}</p>}
+          {suggestError && <p className="text-xs text-red-600">{suggestError}</p>}
           {priorityHint && (
-            <div className="flex items-center justify-between gap-2 rounded-lg border border-[#6fbe44]/30 bg-[#6fbe44]/10 px-3 py-2 text-xs text-[#93d75f]">
+            <div className="flex items-center justify-between gap-2 rounded-lg border border-gold-500/40 bg-gold-500/10 px-3 py-2 text-xs text-gold-700">
               <span>
                 Suggested priority: <strong>{priorityHint.label}</strong>
-                {priorityHint.reason && <span className="text-[#93d75f]/70"> — {priorityHint.reason}</span>}
+                {priorityHint.reason && <span className="text-gold-700"> — {priorityHint.reason}</span>}
               </span>
               <button
                 type="button"
                 onClick={() => setPriorityHint(null)}
                 aria-label="Dismiss"
-                className="shrink-0 text-[#93d75f]/70 hover:text-[#93d75f]"
+                className="shrink-0 text-gold-700 hover:text-gold-600"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -144,7 +144,7 @@ export function TaskFormDialog({ boardId, members, task, isSubmitting, error, on
                 </option>
               ))}
             </select>
-            {assigneeReason && <span className="text-xs text-white/40">{assigneeReason}</span>}
+            {assigneeReason && <span className="text-xs text-slate-500">{assigneeReason}</span>}
           </label>
           <label className={labelClasses}>
             Due date (optional)
@@ -158,23 +158,23 @@ export function TaskFormDialog({ boardId, members, task, isSubmitting, error, on
               }}
               className={inputClasses}
             />
-            {dueDateReason && <span className="text-xs text-white/40">{dueDateReason}</span>}
+            {dueDateReason && <span className="text-xs text-slate-500">{dueDateReason}</span>}
           </label>
 
-          {error && <p className="text-sm text-[#e69c9c]">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="mt-1 flex items-center gap-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-[#6fbe44] px-4 py-2 text-sm font-semibold text-[#131415] transition-colors hover:bg-[#93d75f] disabled:opacity-50"
+              className="rounded-lg bg-gold-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-gold-500 disabled:opacity-50"
             >
               {isSubmitting ? "Saving..." : task ? "Save changes" : "Create task"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-white/40 hover:text-white/70 hover:underline"
+              className="text-xs text-slate-500 hover:text-slate-600 hover:underline"
             >
               Cancel
             </button>

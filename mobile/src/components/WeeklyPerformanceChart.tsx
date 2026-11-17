@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import type { WeeklyTaskCompletion } from '../types/boards';
+import { colors } from '../theme/colors';
 
 // Fixed status scale (dataviz reference palette) — these three metrics each carry a
 // good/bad judgment (completed = good outcome, overdue = critical), so per the palette's
@@ -16,7 +17,7 @@ const STATUS_COLORS = {
 // is pairing it with a visible label rather than relying on hue alone, which the legend and
 // the numeric breakdown below both provide.
 const CHART_INK = {
-  primary: '#0b0b0b',
+  primary: colors.ink950,
   secondary: '#52514e',
   muted: '#898781',
   axis: '#c3c2b7',

@@ -20,7 +20,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/50 px-4">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-950/50 px-4">
       <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
         <div className="flex items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">

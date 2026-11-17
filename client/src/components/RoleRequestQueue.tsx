@@ -27,7 +27,7 @@ export function RoleRequestQueue({ items, isBusy, onGrant, onDismiss }: RoleRequ
                 {employee.jobTitle} — currently {EmployeeRoleLabels[employee.role]}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                Requested: <span className="font-medium text-amber-600">{EmployeeRoleLabels[employee.requestedRole!]}</span>
+                Requested: <span className="font-medium text-gold-600">{EmployeeRoleLabels[employee.requestedRole!]}</span>
               </p>
             </div>
             <div className="flex gap-2">

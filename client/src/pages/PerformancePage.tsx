@@ -24,14 +24,14 @@ const RANGE_OPTIONS = [PerformanceRange.Week, PerformanceRange.Month, Performanc
 
 function RangeToggle({ range, onChange }: { range: PerformanceRange; onChange: (range: PerformanceRange) => void }) {
   return (
-    <div className="flex gap-1.5 rounded-lg border border-white/10 bg-[#3a3d40] p-1">
+    <div className="flex gap-1.5 rounded-lg border border-slate-200 bg-white p-1">
       {RANGE_OPTIONS.map((option) => (
         <button
           key={option}
           type="button"
           onClick={() => onChange(option)}
           className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-            range === option ? "bg-[#3f7429] text-[#eaf6de]" : "text-white/50 hover:bg-white/5"
+            range === option ? "bg-gold-600 text-white" : "text-slate-500 hover:bg-slate-50"
           }`}
         >
           {PerformanceRangeLabels[option]}
@@ -59,7 +59,7 @@ function StatPill({ label, value, icon: Icon, color }: StatPillProps) {
       <span className="text-sm font-semibold" style={{ color }}>
         {animated ?? "—"}
       </span>
-      <span className="text-xs text-white/50">{label}</span>
+      <span className="text-xs text-slate-500">{label}</span>
     </div>
   );
 }
@@ -69,18 +69,18 @@ function PerformanceChart({ chart }: { chart: MyPerformanceDto["chart"] }) {
   const isDense = chart.length > 10;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#3a3d40] p-4">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex items-end gap-2" style={{ minWidth: chart.length > 14 ? chart.length * 28 : undefined }}>
         {chart.map((point) => (
           <div key={point.bucketStart} className="flex flex-1 flex-col items-center gap-1.5" style={{ minWidth: isDense ? 20 : undefined }}>
-            {!isDense && <span className="text-[10px] font-semibold text-white/70">{point.tasksCompleted}</span>}
-            <div className="flex h-32 w-full items-end overflow-hidden rounded-md bg-white/5" title={`${point.label}: ${point.tasksCompleted}`}>
+            {!isDense && <span className="text-[10px] font-semibold text-slate-600">{point.tasksCompleted}</span>}
+            <div className="flex h-32 w-full items-end overflow-hidden rounded-md bg-slate-50" title={`${point.label}: ${point.tasksCompleted}`}>
               <div
-                className="w-full rounded-md bg-[#6fbe44] transition-all duration-500"
+                className="w-full rounded-md bg-gold-600 transition-all duration-500"
                 style={{ height: `${Math.max(4, (point.tasksCompleted / max) * 100)}%` }}
               />
             </div>
-            <span className="whitespace-nowrap text-[10px] text-white/40">{point.label}</span>
+            <span className="whitespace-nowrap text-[10px] text-slate-500">{point.label}</span>
           </div>
         ))}
       </div>
@@ -91,32 +91,32 @@ function PerformanceChart({ chart }: { chart: MyPerformanceDto["chart"] }) {
 function OrgPerformanceRow({ row, maxCompleted }: { row: EmployeePerformanceDto; maxCompleted: number }) {
   const barWidth = Math.max(4, (row.tasksCompleted / maxCompleted) * 100);
   return (
-    <tr className="transition-colors hover:bg-[#454850]">
+    <tr className="transition-colors hover:bg-slate-50">
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           <PersonAvatar name={row.employeeName} size={28} />
           <div>
-            <p className="font-medium text-white">{row.employeeName}</p>
-            <p className="text-[11px] text-white/40">{row.siteName}</p>
+            <p className="font-medium text-slate-900">{row.employeeName}</p>
+            <p className="text-[11px] text-slate-500">{row.siteName}</p>
           </div>
         </div>
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-[#6fbe44]" style={{ width: `${barWidth}%` }} />
+          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-full rounded-full bg-gold-600" style={{ width: `${barWidth}%` }} />
           </div>
-          <span className="text-white/80">{row.tasksCompleted}</span>
+          <span className="text-slate-700">{row.tasksCompleted}</span>
         </div>
       </td>
-      <td className="px-4 py-3 text-[#93d75f]">{row.tasksDoneThisWeek}</td>
-      <td className="px-4 py-3 text-[#f5a83c]">{row.tasksInProgress}</td>
-      <td className="px-4 py-3 text-[#e69c9c]">{row.tasksOverdue}</td>
-      <td className="px-4 py-3 text-white/70">{row.boardsCompleted}</td>
+      <td className="px-4 py-3 text-gold-700">{row.tasksDoneThisWeek}</td>
+      <td className="px-4 py-3 text-amber-600">{row.tasksInProgress}</td>
+      <td className="px-4 py-3 text-red-600">{row.tasksOverdue}</td>
+      <td className="px-4 py-3 text-slate-600">{row.boardsCompleted}</td>
       <td className="px-4 py-3">
         <span
           className={`font-semibold ${
-            row.completionRatePercent >= 75 ? "text-[#1ecb8f]" : row.completionRatePercent >= 40 ? "text-[#f5a83c]" : "text-[#e69c9c]"
+            row.completionRatePercent >= 75 ? "text-emerald-600" : row.completionRatePercent >= 40 ? "text-amber-600" : "text-red-600"
           }`}
         >
           {row.completionRatePercent}%
@@ -139,14 +139,14 @@ function SummaryTile({ label, value, sub, icon: Icon, color }: SummaryTileProps)
   const animated = useCountUp(isNumeric ? value : null);
   return (
     <div
-      className="flex min-w-[160px] flex-1 items-center gap-3 rounded-xl border-l-4 bg-[#3a3d40] px-4 py-3"
+      className="flex min-w-[160px] flex-1 items-center gap-3 rounded-xl border-l-4 bg-white px-4 py-3"
       style={{ borderLeftColor: color }}
     >
       <Icon className="h-6 w-6 shrink-0" style={{ color }} />
       <div className="min-w-0">
-        <p className="truncate text-[11px] text-white/40">{label}</p>
-        <p className="truncate text-lg font-bold text-white">{isNumeric ? (animated ?? "—") : value ?? "—"}</p>
-        {sub && <p className="truncate text-[11px] text-white/40">{sub}</p>}
+        <p className="truncate text-[11px] text-slate-500">{label}</p>
+        <p className="truncate text-lg font-bold text-slate-900">{isNumeric ? (animated ?? "—") : value ?? "—"}</p>
+        {sub && <p className="truncate text-[11px] text-slate-500">{sub}</p>}
       </div>
     </div>
   );
@@ -155,17 +155,17 @@ function SummaryTile({ label, value, sub, icon: Icon, color }: SummaryTileProps)
 function CompletedBoardCard({ board }: { board: CompletedBoardDto }) {
   const priorityColor = BoardPriorityColors[board.priority];
   return (
-    <div className="flex flex-col gap-2 rounded-xl border-l-4 border-l-[#1ecb8f] bg-[#3a3d40] p-4">
+    <div className="flex flex-col gap-2 rounded-xl border-l-4 border-l-emerald-500 bg-white p-4">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-white">{board.name}</p>
-        <span className="shrink-0 rounded-full bg-[#1ecb8f]/15 px-2 py-0.5 text-[10px] font-semibold text-[#1ecb8f]">
+        <p className="text-sm font-semibold text-slate-900">{board.name}</p>
+        <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
           Completed
         </span>
       </div>
-      {board.description && <p className="line-clamp-2 text-xs text-white/50">{board.description}</p>}
-      <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-white/40">
+      {board.description && <p className="line-clamp-2 text-xs text-slate-500">{board.description}</p>}
+      <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500">
         <span>
-          Owned by <strong className="text-white/70">{board.ownerEmployeeName}</strong>
+          Owned by <strong className="text-slate-600">{board.ownerEmployeeName}</strong>
         </span>
         {board.deadline && (
           <span className="flex items-center gap-1">
@@ -183,10 +183,10 @@ function CompletedBoardCard({ board }: { board: CompletedBoardDto }) {
         <div className="flex items-center gap-1.5 pt-1">
           <div className="flex -space-x-2">
             {board.memberNames.slice(0, 5).map((name) => (
-              <PersonAvatar key={name} name={name} size={22} className="border-[#3a3d40]" />
+              <PersonAvatar key={name} name={name} size={22} className="border-white" />
             ))}
           </div>
-          <span className="text-[10px] text-white/40">
+          <span className="text-[10px] text-slate-500">
             {board.memberNames.length} member{board.memberNames.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -265,13 +265,13 @@ export function PerformancePage() {
   return (
     <div className="stagger-children flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-white">Performance</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Performance</h2>
         <div className="flex flex-wrap items-center gap-2">
           {isExecutive && (
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="rounded-lg border border-white/10 bg-[#3a3d40] px-3 py-2 text-sm text-white focus:border-[#6fbe44] focus:outline-none"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-gold-500 focus:outline-none"
             >
               <option value="">All sites</option>
               {sites.map((site) => (
@@ -285,7 +285,7 @@ export function PerformancePage() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-[#e69c9c]">{error}</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       {!isOrgView &&
         (isLoading ? (
@@ -322,21 +322,21 @@ export function PerformancePage() {
               <>
                 <SummaryTile label="Tasks Done This Week" value={orgSummary.tasksDoneThisWeek} icon={CheckCircle2} color="#1ecb8f" />
                 <SummaryTile label="In Progress Across Team" value={orgSummary.tasksInProgress} icon={Clock} color="#f5a83c" />
-                <SummaryTile label="Team Members" value={orgSummary.teamMembers} icon={Users} color="#f5a83c" />
-                <SummaryTile label="Boards Completed (All Time)" value={orgSummary.boardsCompletedAllTime} icon={LayoutGrid} color="#6fbe44" />
+                <SummaryTile label="Team Members" value={orgSummary.teamMembers} icon={Users} color="#5b5bd6" />
+                <SummaryTile label="Boards Completed (All Time)" value={orgSummary.boardsCompletedAllTime} icon={LayoutGrid} color="#5b5bd6" />
                 <SummaryTile
                   label="Top Performer This Week"
                   value={orgSummary.topPerformerName ?? "—"}
                   sub={orgSummary.topPerformerName ? `${orgSummary.topPerformerTasksDoneThisWeek} tasks done` : undefined}
                   icon={Trophy}
-                  color="#ffc107"
+                  color="#5b5bd6"
                 />
               </>
             )}
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-slate-900">
               {isExecutive ? "Employee performance" : "All employees"}
             </h3>
             {isLoading ? (
@@ -345,15 +345,15 @@ export function PerformancePage() {
                 <KpiSkeletonCard />
               </div>
             ) : sortedOrgPerformance.length === 0 ? (
-              <p className="rounded-xl border border-white/10 bg-[#3a3d40] px-6 py-8 text-center text-sm text-white/40">
+              <p className="rounded-xl border border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
                 No employees found.
               </p>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-white/10">
+              <div className="overflow-hidden rounded-xl border border-slate-200">
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-left text-xs">
                     <thead>
-                      <tr className="bg-[#3f7429] text-white">
+                      <tr className="bg-slate-50 text-slate-900">
                         <th className="px-4 py-3 font-semibold">Employee</th>
                         <th className="px-4 py-3 font-semibold">Completed</th>
                         <th className="px-4 py-3 font-semibold">Done This Week</th>
@@ -363,7 +363,7 @@ export function PerformancePage() {
                         <th className="px-4 py-3 font-semibold">Completion Rate</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-[#3a3d40]">
+                    <tbody className="bg-white">
                       {sortedOrgPerformance.map((row) => (
                         <OrgPerformanceRow key={row.employeeId} row={row} maxCompleted={maxCompleted} />
                       ))}
@@ -375,9 +375,9 @@ export function PerformancePage() {
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-white">
+            <h3 className="text-sm font-semibold text-slate-900">
               Completed boards history
-              <span className="ml-2 rounded-full bg-[#1ecb8f]/15 px-2 py-0.5 text-[11px] font-semibold text-[#1ecb8f]">
+              <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
                 {completedBoards.length}
               </span>
             </h3>
@@ -386,7 +386,7 @@ export function PerformancePage() {
                 <KpiSkeletonCard />
               </div>
             ) : completedBoards.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-white/10 bg-[#3a3d40] px-6 py-8 text-center text-sm text-white/40">
+              <p className="rounded-xl border border-dashed border-slate-200 bg-white px-6 py-8 text-center text-sm text-slate-500">
                 No boards have been completed yet.
               </p>
             ) : (

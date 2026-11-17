@@ -19,11 +19,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const stored = await SecureStore.getItemAsync(SESSION_STORAGE_KEY);
-      if (stored) {
-        setSession(JSON.parse(stored) as Session);
+      try {
+        // expo-secure-store has no web implementation, so this throws there rather than
+        // resolving null - fall back to "no stored session" instead of leaving isLoading
+        // stuck true forever (an uncaught rejection here never reaches the line below it).
+        const stored = await SecureStore.getItemAsync(SESSION_STORAGE_KEY);
+        if (stored) {
+          setSession(JSON.parse(stored) as Session);
+        }
+      } catch {
+        // Fall through with no session restored.
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     })();
   }, []);
 

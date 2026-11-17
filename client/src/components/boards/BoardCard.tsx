@@ -32,16 +32,16 @@ export function BoardCard({ board }: BoardCardProps) {
   return (
     <Link
       to={`/kpi/boards/${board.id}`}
-      className="flex flex-col gap-3 rounded-xl border-l-4 border-l-[#6fbe44] bg-[#3a3d40] p-4 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+      className="flex flex-col gap-3 rounded-xl border-l-4 border-l-gold-600 bg-white p-4 shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">{board.name}</p>
-          <p className="truncate text-xs text-white/50">Owned by {board.ownerEmployeeName}</p>
+          <p className="truncate text-sm font-semibold text-slate-900">{board.name}</p>
+          <p className="truncate text-xs text-slate-500">Owned by {board.ownerEmployeeName}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {board.isArchived && (
-            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/60">
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
               Archived
             </span>
           )}
@@ -54,7 +54,7 @@ export function BoardCard({ board }: BoardCardProps) {
         </div>
       </div>
 
-      {board.description && <p className="line-clamp-2 text-xs text-white/60">{board.description}</p>}
+      {board.description && <p className="line-clamp-2 text-xs text-slate-600">{board.description}</p>}
 
       <div className="flex flex-wrap items-center gap-1.5">
         {board.priority !== BoardPriority.Normal && (
@@ -66,7 +66,7 @@ export function BoardCard({ board }: BoardCardProps) {
           </span>
         )}
         {board.deadline && (
-          <span className="flex items-center gap-1 rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-white/50">
+          <span className="flex items-center gap-1 rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
             <CalendarDays className="h-2.5 w-2.5" />
             {formatDate(board.deadline)}
           </span>
@@ -74,20 +74,20 @@ export function BoardCard({ board }: BoardCardProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full rounded-full bg-[#6fbe44] transition-all" style={{ width: `${board.completionPercentage}%` }} />
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-full rounded-full bg-gold-600 transition-all" style={{ width: `${board.completionPercentage}%` }} />
         </div>
-        <span className="text-[10px] font-semibold text-white/50">{board.completionPercentage}%</span>
+        <span className="text-[10px] font-semibold text-slate-500">{board.completionPercentage}%</span>
       </div>
 
       <div className="mt-auto flex items-center gap-2 pt-1">
-        <Users className="h-3.5 w-3.5 text-white/40" />
+        <Users className="h-3.5 w-3.5 text-slate-500" />
         <div className="flex -space-x-2">
           {visibleMembers.map((member) => (
-            <PersonAvatar key={member.employeeId} name={member.employeeName} size={24} className="border-[#3a3d40]" />
+            <PersonAvatar key={member.employeeId} name={member.employeeName} size={24} className="border-white" />
           ))}
           {overflowCount > 0 && (
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-[#3a3d40] bg-white/10 text-[10px] font-semibold text-white/70">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-semibold text-slate-600">
               +{overflowCount}
             </span>
           )}

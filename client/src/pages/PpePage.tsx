@@ -87,7 +87,7 @@ export function PpePage() {
             <select
               value={form.itemType}
               onChange={(e) => setForm((prev) => ({ ...prev, itemType: Number(e.target.value) as PpeItemType }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             >
               {Object.entries(PpeItemTypeLabels).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -101,7 +101,7 @@ export function PpePage() {
             <input
               value={form.size}
               onChange={(e) => setForm((prev) => ({ ...prev, size: e.target.value }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm text-slate-700">
@@ -113,7 +113,7 @@ export function PpePage() {
               required
               value={form.quantity}
               onChange={(e) => setForm((prev) => ({ ...prev, quantity: Number(e.target.value) }))}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
             />
           </label>
         </div>
@@ -129,7 +129,7 @@ export function PpePage() {
             required
             value={form.reason}
             onChange={(e) => setForm((prev) => ({ ...prev, reason: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/15"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/15"
           />
         </label>
       ),

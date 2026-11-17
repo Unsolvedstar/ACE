@@ -8,7 +8,8 @@ test("dashboard loads with module launch grid after login", async ({ page }) => 
   await page.waitForURL("http://localhost:5173/");
 
   await expect(page.getByText(/Welcome back,/)).toBeVisible();
-  await expect(page.getByText("Attendance Today")).toBeVisible();
   await expect(page.getByText("Incidents (MTD)")).toBeVisible();
-  await expect(page.getByText("Attendance overview")).toBeVisible();
+  await expect(page.getByText("Medical Compliance")).toBeVisible();
+  await expect(page.getByText("Recent Shift Requests")).toBeVisible();
+  await expect(page.getByText("Core Modules")).toBeVisible();
 });

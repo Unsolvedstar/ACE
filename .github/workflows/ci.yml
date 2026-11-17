@@ -53,3 +53,128 @@ jobs:
       - name: Test
         working-directory: client
         run: npm test
+
+  mobile:
+    name: Mobile typecheck & health check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+      - name: Expo project health check
+        working-directory: mobile
+        run: npx expo-doctor
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: acme_hr
+          POSTGRES_USER: acme_app
+          POSTGRES_PASSWORD: acmehr_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U acme_app -d acme_hr"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Start API (auto-migrates + seeds on startup)
+        working-directory: server
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__Default: "Host=localhost;Port=5432;Database=acme_hr;Username=acme_app;Password=acmehr_ci_password"
+          Jwt__Key: "ci-only-signing-key-not-for-any-real-deployment-0123456789"
+          Jwt__Issuer: AcmeHR
+          Jwt__Audience: AcmeHR.Client
+          Jwt__ExpiryMinutes: "60"
+        run: |
+          nohup dotnet run --project src/AcmeHR.Api --urls http://localhost:5167 > api.log 2>&1 &
+          disown
+
+      - name: Wait for API
+        run: |
+          for i in $(seq 1 90); do
+            if curl -sf http://localhost:5167/healthz > /dev/null; then
+              echo "API is up."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy in time." >&2
+          cat server/api.log || true
+          exit 1
+
+      - name: Install client dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+
+      - name: Start frontend dev server
+        working-directory: client
+        run: |
+          nohup npm run dev -- --port 5173 --strictPort > dev-server.log 2>&1 &
+          disown
+
+      - name: Wait for frontend
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:5173 > /dev/null; then
+              echo "Frontend is up."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Frontend did not become ready in time." >&2
+          cat client/dev-server.log || true
+          exit 1
+
+      - name: Run Playwright tests
+        working-directory: client
+        run: npx playwright test
+
+      - name: Upload logs and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            client/playwright-report/
+            server/api.log
+            client/dev-server.log
+          retention-days: 7
